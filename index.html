@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Terrace Bar – Sito vetrina (demo)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--sand:#f7f1e8;--card:#fffdf9;--ink:#1d2a2f;--muted:#66727a;--line:#e6dccb;--ocean:#0e5a6b;--ocean2:#093f4b;--coral:#e2725b;--gold:#e9b44c}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:Inter,system-ui,sans-serif;color:var(--ink);background:var(--sand);font-size:16px;line-height:1.55}
+button{font:inherit;cursor:pointer}
+.demo{background:var(--ink);color:#fff;font-size:12px;text-align:center;padding:6px 10px;padding-top:calc(6px + env(safe-area-inset-top))}
+header{position:sticky;top:0;z-index:20;background:rgba(247,241,232,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.hwrap{max-width:1100px;margin:0 auto;display:flex;align-items:center;gap:16px;padding:12px 20px}
+.brand{display:flex;flex-direction:column;line-height:1.05;text-decoration:none;color:inherit}
+.brand b{font-family:Fraunces,serif;font-size:23px;font-weight:600}
+.brand small{font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--muted)}
+nav.main{display:flex;gap:20px;margin-left:auto}
+nav.main a{text-decoration:none;font-size:14px;font-weight:500;color:var(--muted)}
+.langs{display:flex;border:1px solid var(--line);border-radius:999px;padding:2px;background:#fff}
+.langs button{border:0;background:none;font-size:12px;font-weight:600;padding:5px 8px;border-radius:999px;color:var(--muted)}
+.langs button.on{background:var(--ink);color:#fff}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:999px;padding:12px 22px;font-weight:600;text-decoration:none;white-space:nowrap}
+.btn.coral{background:var(--coral);color:#fff;box-shadow:0 8px 20px rgba(226,114,91,.3)}
+.btn.ghost{background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.5)}
+.btn.dark{background:var(--ink);color:#fff}
+.btn.light{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.btn.wa{background:#25d366;color:#fff}
+.btn.ig{background:linear-gradient(45deg,#f09433,#dc2743,#bc1888);color:#fff}
+.hmenu{padding:10px 18px}
+.hero{position:relative;min-height:86vh;display:flex;align-items:flex-end;color:#fff;overflow:hidden}
+.hero .art{position:absolute;inset:0}.hero .art img{width:100%;height:100%;object-fit:cover;object-position:50% 62%;display:block}
+.hero:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 35%,rgba(5,30,38,.7) 100%);pointer-events:none}
+.hin{position:relative;z-index:2;max-width:1100px;width:100%;margin:0 auto;padding:0 20px 56px}
+.kicker{font-size:12px;letter-spacing:.3em;text-transform:uppercase;opacity:.9}
+.hero h1{font-family:Fraunces,serif;font-weight:400;font-size:clamp(40px,6.5vw,76px);line-height:1.03;margin:10px 0 14px;max-width:760px}
+.hero p{font-size:18px;max-width:540px;opacity:.92;margin:0 0 24px}
+.hbtns{display:flex;gap:10px;flex-wrap:wrap}
+.open{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.14);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:600;margin-bottom:14px}
+.open i{width:8px;height:8px;border-radius:50%;background:#7bd389;display:inline-block}
+section{padding:84px 20px}
+.wrap{max-width:1100px;margin:0 auto}
+.eyebrow{font-size:12px;letter-spacing:.28em;text-transform:uppercase;color:var(--coral);font-weight:600}
+h2{font-family:Fraunces,serif;font-weight:400;font-size:clamp(30px,4vw,44px);line-height:1.1;margin:10px 0 14px}
+.lead{color:var(--muted);font-size:18px;max-width:620px;margin:0}
+.hl{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:36px}
+.hli{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px}
+.hli .ic{font-size:28px}.hli b{display:block;font-size:17px;margin:10px 0 4px}.hli span{color:var(--muted);font-size:14px}
+.menu{background:var(--ocean2);color:#fff}
+.menu .lead{color:rgba(255,255,255,.75)}
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px 40px;margin-top:36px}
+.mi{display:flex;gap:14px;align-items:flex-start;padding:14px 0;border-bottom:1px dashed rgba(255,255,255,.2)}
+.mi .e{width:68px;height:68px;flex:none;border-radius:14px;overflow:hidden;background:rgba(255,255,255,.08)}.mi .e .em{display:grid;place-items:center;height:100%;font-size:32px;background:linear-gradient(135deg,rgba(226,114,91,.35),rgba(233,180,76,.25))}.mi .e img{width:100%;height:100%;object-fit:cover;display:block}
+.mi .t{flex:1}.mi b{display:block}.mi span{font-size:13px;opacity:.7}
+.mi .p{font-family:Fraunces,serif;font-size:20px;color:var(--gold)}
+.mcta{display:flex;gap:12px;flex-wrap:wrap;margin-top:34px;align-items:center}
+.mcta small{opacity:.7;font-size:13px}
+.happy{margin-top:40px;background:linear-gradient(120deg,var(--coral),#f0a35a);border-radius:22px;padding:26px 28px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.happy .big{font-family:Fraunces,serif;font-size:34px;line-height:1}
+.happy p{margin:4px 0 0;opacity:.95}
+.gal{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:220px;gap:12px;margin-top:36px}
+.gal div{border-radius:16px;overflow:hidden;position:relative}.gal div img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s}.gal div:hover img{transform:scale(1.04)}
+.gal .w2{grid-column:span 2}.gal .h2{grid-row:span 2}
+.tagph{position:absolute;left:12px;top:12px;background:rgba(255,255,255,.9);color:var(--ink);font-size:11px;font-weight:600;padding:4px 8px;border-radius:6px}
+.info{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start}
+.hours{list-style:none;padding:0;margin:24px 0;display:grid;gap:8px}
+.hours li{display:flex;justify-content:space-between;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 16px}
+.hours li b{color:var(--ocean)}
+.where{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:24px}
+.where h3{font-family:Fraunces,serif;font-weight:400;font-size:26px;margin:0 0 8px}
+.where p{color:var(--muted);margin:0 0 18px}
+.cbtns{display:grid;gap:10px}
+footer{background:var(--ink);color:rgba(255,255,255,.75);padding:36px 20px 110px;font-size:14px}
+.fwrap{max-width:1100px;margin:0 auto;display:flex;flex-wrap:wrap;gap:24px;justify-content:space-between}
+footer b{font-family:Fraunces,serif;color:#fff;font-size:22px;font-weight:600}
+.sticky{position:fixed;left:0;right:0;bottom:0;z-index:30;display:none;padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:linear-gradient(transparent,rgba(247,241,232,.95) 35%)}
+.sticky .btn{width:100%;padding:15px}
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:13px 18px;border-radius:12px;font-size:14px;opacity:0;transition:.25s;z-index:40;max-width:90vw;text-align:center;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%)}
+@media (max-width:860px){
+  nav.main,.hmenu{display:none}.sticky{display:block}
+  .hl{grid-template-columns:1fr 1fr}.mgrid,.info{grid-template-columns:1fr}
+  .gal{grid-template-columns:1fr 1fr;grid-auto-rows:150px}
+  section{padding:60px 18px}.hero{min-height:76vh}
+}
+@media (max-width:480px){.hl{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="demo" id="demo"></div>
+<header><div class="hwrap">
+  <a class="brand" href="#top"><b>Sunset Terrace</b><small id="sub"></small></a>
+  <nav class="main" id="nav"></nav>
+  <div class="langs" id="langs"></div>
+  <a class="btn coral hmenu" href="menu/" id="hMenu"></a>
+</div></header>
+
+<div class="hero" id="top">
+  <div class="art"><img src="img/hero.jpg" alt=""></div>
+  <div class="hin">
+    <div class="open"><i></i><span id="openNow"></span></div>
+    <div class="kicker" id="kicker"></div>
+    <h1 id="h1"></h1>
+    <p id="hsub"></p>
+    <div class="hbtns"><a class="btn coral" href="menu/" id="hb1"></a><a class="btn ghost" href="#info" id="hb2"></a></div>
+  </div>
+</div>
+
+<section id="about"><div class="wrap">
+  <div class="eyebrow" id="e1"></div><h2 id="t1"></h2><p class="lead" id="l1"></p>
+  <div class="hl" id="hl"></div>
+</div></section>
+
+<section class="menu" id="menu"><div class="wrap">
+  <div class="eyebrow" id="e2"></div><h2 id="t2"></h2><p class="lead" id="l2"></p>
+  <div class="mgrid" id="mgrid"></div>
+  <div class="mcta"><a class="btn coral" href="menu/" id="mFull"></a><small id="mNote"></small></div>
+  <div class="happy"><div class="big">🍹 18:00 – 20:00</div><div><b id="hhT"></b><p id="hhP"></p></div></div>
+</div></section>
+
+<section id="gallery"><div class="wrap">
+  <div class="eyebrow" id="e3"></div><h2 id="t3"></h2>
+  <div class="gal" id="gal"></div>
+</div></section>
+
+<section id="info" style="padding-top:0"><div class="wrap info">
+  <div>
+    <div class="eyebrow" id="e4"></div><h2 id="t4"></h2><p class="lead" id="l4"></p>
+    <ul class="hours" id="hours"></ul>
+  </div>
+  <div class="where">
+    <h3 id="wT"></h3><p id="wP"></p>
+    <div class="cbtns">
+      <a class="btn wa" href="#" data-demo="wa" id="bWa"></a>
+      <a class="btn ig" href="#" data-demo="ig" id="bIg"></a>
+      <a class="btn dark" href="https://www.google.com/maps/search/?api=1&query=Costa+Adeje" id="bMap"></a>
+    </div>
+  </div>
+</div></section>
+
+<footer><div class="fwrap">
+  <div><b>Sunset Terrace</b><div>Costa Adeje · Tenerife</div></div>
+  <div id="fTxt"></div>
+  <div>© 2026</div>
+</div></footer>
+<div class="sticky"><a class="btn coral" href="menu/" id="stBtn"></a></div>
+<div class="toast" id="toast"></div>
+
+<script>
+
+const MENU="menu/";
+const L=["en","es","de","it"];
+const T={
+ demo:{en:"Bar website proposal — DEMO. Name, prices and hours are examples.",es:"Propuesta de web para el bar — DEMO. Nombre, precios y horarios de ejemplo.",de:"Website-Vorschlag für die Bar — DEMO. Name, Preise und Zeiten sind Beispiele.",it:"Proposta di sito per il bar — DEMO. Nome, prezzi e orari sono di esempio."},
+ sub:{en:"Cocktails · Italian kitchen · Sea view",es:"Cócteles · Cocina italiana · Vistas al mar",de:"Cocktails · Italienische Küche · Meerblick",it:"Cocktail · Cucina italiana · Vista mare"},
+ nav:{en:["The bar","Menu","Gallery","Hours & contact"],es:["El bar","Carta","Galería","Horario y contacto"],de:["Die Bar","Karte","Galerie","Zeiten & Kontakt"],it:["Il bar","Menù","Galleria","Orari e contatti"]},
+ seeMenu:{en:"See the menu",es:"Ver la carta",de:"Karte ansehen",it:"Guarda il menù"},
+ orderMenu:{en:"Menu & order",es:"Carta y pedidos",de:"Karte & bestellen",it:"Menù e ordina"},
+ openNow:{en:"Open today 10:00 – 00:00",es:"Abierto hoy 10:00 – 00:00",de:"Heute geöffnet 10:00 – 00:00",it:"Aperto oggi 10:00 – 00:00"},
+ kicker:{en:"Terrace bar · Costa Adeje",es:"Bar terraza · Costa Adeje",de:"Terrassenbar · Costa Adeje",it:"Terrace bar · Costa Adeje"},
+ h1:{en:"Cocktails and sunsets with a sea view",es:"Cócteles y atardeceres con vistas al mar",de:"Cocktails und Sonnenuntergänge mit Meerblick",it:"Cocktail e tramonti con vista sul mare"},
+ hsub:{en:"Cocktails, pasta, burgers and Italian classics on our terrace above the beach. Order straight from your phone.",es:"Cócteles, pasta, hamburguesas y clásicos italianos en nuestra terraza sobre la playa. Pide desde el móvil.",de:"Cocktails, Pasta, Burger und italienische Klassiker auf unserer Terrasse über dem Strand. Per Handy bestellen.",it:"Cocktail, pasta, burger e classici italiani sulla nostra terrazza sopra la spiaggia. Ordina direttamente dal telefono."},
+ findUs:{en:"Hours & location",es:"Horario y ubicación",de:"Zeiten & Lage",it:"Orari e posizione"},
+ e1:{en:"The bar",es:"El bar",de:"Die Bar",it:"Il bar"},
+ t1:{en:"Your table above the beach",es:"Tu mesa sobre la playa",de:"Ihr Tisch über dem Strand",it:"Il tuo tavolo sopra la spiaggia"},
+ l1:{en:"Coloured lights inside, the Atlantic outside. From aperitivo to the last cocktail of the night.",es:"Luces de colores dentro, el Atlántico fuera. Del aperitivo al último cóctel de la noche.",de:"Bunte Lichter drinnen, der Atlantik draußen. Vom Aperitif bis zum letzten Cocktail der Nacht.",it:"Luci colorate dentro, l'Atlantico fuori. Dall'aperitivo all'ultimo cocktail della sera."},
+ hl:{en:[["🍹","Cocktails €8","Mojito, spritz, negroni and more"],["🍝","Italian kitchen","Pasta, parmigiana and meatballs"],["🌅","Sea-view terrace","The best sunset on the coast"],["📱","Order by phone","Scan, choose, done"]],
+     es:[["🍹","Cócteles a 8 €","Mojito, spritz, negroni y más"],["🍝","Cocina italiana","Pasta, parmesana y albóndigas"],["🌅","Terraza con vistas","El mejor atardecer de la costa"],["📱","Pide con el móvil","Escanea, elige y listo"]],
+     de:[["🍹","Cocktails 8 €","Mojito, Spritz, Negroni und mehr"],["🍝","Italienische Küche","Pasta, Parmigiana und Fleischbällchen"],["🌅","Terrasse mit Meerblick","Der schönste Sonnenuntergang der Küste"],["📱","Per Handy bestellen","Scannen, wählen, fertig"]],
+     it:[["🍹","Cocktail a 8 €","Mojito, spritz, negroni e altri"],["🍝","Cucina italiana","Pasta, parmigiana e polpette"],["🌅","Terrazza vista mare","Il tramonto più bello della costa"],["📱","Ordina dal telefono","Scansiona, scegli, fatto"]]},
+ e2:{en:"Menu",es:"Carta",de:"Karte",it:"Menù"},
+ t2:{en:"Guest favourites",es:"Los favoritos",de:"Die Lieblinge unserer Gäste",it:"I più amati"},
+ l2:{en:"A taste of the menu. The full menu, with allergens, is one tap away.",es:"Un adelanto de la carta. La carta completa, con alérgenos, a un toque.",de:"Ein Vorgeschmack. Die ganze Karte mit Allergenen ist nur einen Tipp entfernt.",it:"Un assaggio del menù. Quello completo, con allergeni, è a un tocco."},
+ mi:{en:[["cocktail1","Mojito","Rum, lime, mint and soda",8],["cocktail3","Gin & tonic","Gin and tonic water",8],["frozen","Sex on the beach","Vodka, peach, orange, cranberry",8],["🍝","Spaghetti carbonara","Guanciale, egg and pecorino",8],["🍆","Aubergine parmigiana","Neapolitan classic",8],["🍔","Cheddar & bacon burger","With lettuce and tomato",8]],
+     es:[["cocktail1","Mojito","Ron, lima, hierbabuena y soda",8],["cocktail3","Gin tonic","Ginebra y tónica",8],["frozen","Sex on the beach","Vodka, melocotón, naranja, arándano",8],["🍝","Espaguetis carbonara","Guanciale, huevo y pecorino",8],["🍆","Parmesana de berenjena","Clásico napolitano",8],["🍔","Hamburguesa cheddar y bacon","Con lechuga y tomate",8]],
+     de:[["cocktail1","Mojito","Rum, Limette, Minze und Soda",8],["cocktail3","Gin Tonic","Gin und Tonic Water",8],["frozen","Sex on the beach","Wodka, Pfirsich, Orange, Cranberry",8],["🍝","Spaghetti Carbonara","Guanciale, Ei und Pecorino",8],["🍆","Auberginen-Parmigiana","Neapolitanischer Klassiker",8],["🍔","Cheddar-Bacon-Burger","Mit Salat und Tomate",8]],
+     it:[["cocktail1","Mojito","Rum, lime, menta e soda",8],["cocktail3","Gin tonic","Gin e acqua tonica",8],["frozen","Sex on the beach","Vodka, pesca, arancia, mirtillo",8],["🍝","Spaghetti alla carbonara","Guanciale, uova e pecorino",8],["🍆","Parmigiana di melanzane","Classico napoletano",8],["🍔","Hamburger cheddar e bacon","Con insalata e pomodoro",8]]},
+ mFull:{en:"Full menu & order",es:"Carta completa y pedir",de:"Ganze Karte & bestellen",it:"Menù completo e ordina"},
+ mNote:{en:"4 languages · allergens · order from your table",es:"4 idiomas · alérgenos · pide desde tu mesa",de:"4 Sprachen · Allergene · vom Tisch bestellen",it:"4 lingue · allergeni · ordina dal tavolo"},
+ hhT:{en:"Happy hour every day",es:"Happy hour todos los días",de:"Happy Hour jeden Tag",it:"Happy hour tutti i giorni"},
+ hhP:{en:"2×1 on cocktails. Perfect for the sunset.",es:"2×1 en cócteles. Ideal para el atardecer.",de:"2 für 1 auf Cocktails. Perfekt zum Sonnenuntergang.",it:"2×1 sui cocktail. Perfetto per il tramonto."},
+ e3:{en:"Gallery",es:"Galería",de:"Galerie",it:"Galleria"},
+ t3:{en:"The mood",es:"El ambiente",de:"Die Stimmung",it:"L'atmosfera"},
+ photo:{en:"Photo here",es:"Foto aquí",de:"Foto hier",it:"Foto qui"},
+ e4:{en:"Hours",es:"Horario",de:"Öffnungszeiten",it:"Orari"},
+ t4:{en:"Open every day",es:"Abierto todos los días",de:"Täglich geöffnet",it:"Aperto tutti i giorni"},
+ l4:{en:"Also open to visitors, not only hotel guests.",es:"Abierto también al público, no solo a los huéspedes.",de:"Auch für Besucher geöffnet, nicht nur für Hotelgäste.",it:"Aperto anche agli esterni, non solo agli ospiti dell'hotel."},
+ hours:{en:[["Bar","10:00 – 00:00"],["Kitchen","12:00 – 22:00"],["Happy hour","18:00 – 20:00"]],es:[["Bar","10:00 – 00:00"],["Cocina","12:00 – 22:00"],["Happy hour","18:00 – 20:00"]],de:[["Bar","10:00 – 00:00"],["Küche","12:00 – 22:00"],["Happy Hour","18:00 – 20:00"]],it:[["Bar","10:00 – 00:00"],["Cucina","12:00 – 22:00"],["Happy hour","18:00 – 20:00"]]},
+ wT:{en:"Where we are",es:"Dónde estamos",de:"Wo wir sind",it:"Dove siamo"},
+ wP:{en:"A terrace above the seafront promenade of Costa Adeje, right over the beach.",es:"Una terraza sobre el paseo marítimo de Costa Adeje, justo encima de la playa.",de:"Eine Terrasse über der Strandpromenade von Costa Adeje, direkt über dem Strand.",it:"Una terrazza sopra il lungomare di Costa Adeje, proprio sulla spiaggia."},
+ wa:{en:"💬 WhatsApp / reservations",es:"💬 WhatsApp / reservas",de:"💬 WhatsApp / Reservierung",it:"💬 WhatsApp / prenota un tavolo"},
+ ig:{en:"📸 Follow us on Instagram",es:"📸 Síguenos en Instagram",de:"📸 Folgen Sie uns auf Instagram",it:"📸 Seguici su Instagram"},
+ map:{en:"📍 Directions",es:"📍 Cómo llegar",de:"📍 Route",it:"📍 Come arrivare"},
+ fTxt:{en:"Open every day 10:00 – 00:00",es:"Abierto todos los días 10:00 – 00:00",de:"Täglich 10:00 – 00:00",it:"Aperto tutti i giorni 10:00 – 00:00"},
+ tWa:{en:"Demo: opens a WhatsApp chat with the bar.",es:"Demo: abre un chat de WhatsApp con el bar.",de:"Demo: Öffnet einen WhatsApp-Chat mit der Bar.",it:"Demo: apre una chat WhatsApp con il bar."},
+ tIg:{en:"Demo: opens the bar's Instagram profile.",es:"Demo: abre el perfil de Instagram del bar.",de:"Demo: Öffnet das Instagram-Profil der Bar.",it:"Demo: apre il profilo Instagram del bar."}
+};
+const IDS=["about","menu","gallery","info"];
+let lang=(()=>{try{return localStorage.getItem("bar-lang")}catch(e){return null}})()||(navigator.language||"en").slice(0,2);
+if(!L.includes(lang)) lang="en";
+const $=s=>document.querySelector(s);
+const set=(id,h)=>{const el=document.getElementById(id);if(el)el.innerHTML=h};
+const tx=k=>T[k][lang];
+const eur=v=>v.toLocaleString(lang==="en"?"en-GB":lang,{style:"currency",currency:"EUR"});
+
+function render(){
+  document.documentElement.lang=lang;
+  ["demo","sub","openNow","kicker","h1","hsub","e1","t1","l1","e2","t2","l2","mFull","mNote","hhT","hhP","e3","t3","e4","t4","l4","wT","wP","fTxt"].forEach(k=>set(k,tx(k)));
+  set("hMenu",tx("orderMenu"));set("hb1",tx("seeMenu"));set("hb2",tx("findUs"));set("stBtn",tx("orderMenu"));
+  set("bWa",tx("wa"));set("bIg",tx("ig"));set("bMap",tx("map"));
+  $("#nav").innerHTML=tx("nav").map((n,i)=>`<a href="#${IDS[i]}">${n}</a>`).join("");
+  $("#langs").innerHTML=L.map(l=>`<button class="${l===lang?"on":""}" data-l="${l}">${l.toUpperCase()}</button>`).join("");
+  $("#hl").innerHTML=tx("hl").map(([i,b,s])=>`<div class="hli"><div class="ic">${i}</div><b>${b}</b><span>${s}</span></div>`).join("");
+  $("#mgrid").innerHTML=tx("mi").map(([e,n,d,p])=>`<div class="mi"><div class="e">${/^[a-z0-9_]+$/.test(e)?`<img src="img/${e}.jpg" alt="" loading="lazy">`:`<span class="em">${e}</span>`}</div><div class="t"><b>${n}</b><span>${d}</span></div><div class="p">${eur(p)}</div></div>`).join("");
+  const g=[["cocktail1","h2"],["brus_wide","w2 h2"],["frozen","h2"],["fritto1",""],["brus_top",""],["cocktail2","w2"],["fritto2","w2"],["brus5","w2"]];
+  $("#gal").innerHTML=g.map(([k,c])=>`<div class="${c}"><img src="img/${k}.jpg" alt="" loading="lazy"></div>`).join("");
+  $("#hours").innerHTML=tx("hours").map(([a,b])=>`<li><span>${a}</span><b>${b}</b></li>`).join("");
+}
+function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove("show"),3000)}
+document.addEventListener("click",e=>{
+  const l=e.target.closest("[data-l]");if(l){lang=l.dataset.l;try{localStorage.setItem("bar-lang",lang)}catch(_){}render();return}
+  const d=e.target.closest("[data-demo]");if(d){e.preventDefault();toast(d.dataset.demo==="wa"?tx("tWa"):tx("tIg"))}
+});
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Menù con ordinazione – Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sand:#f7f1e8; --card:#fffdf9; --ink:#1f2a2e; --muted:#6b7378; --line:#e7dccb;
+  --ocean:#0f5e6e; --ocean-2:#0b4854; --coral:#e2725b; --leaf:#4f8a5b;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--sand);color:var(--ink);font-family:Inter,system-ui,sans-serif;font-size:15px}
+body{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
+button{font:inherit;color:inherit;cursor:pointer}
+.demo{background:var(--ink);color:#fff;font-size:12px;text-align:center;padding:6px 12px;padding-top:calc(6px + env(safe-area-inset-top));letter-spacing:.02em}
+header{background:linear-gradient(160deg,var(--ocean) 0%,var(--ocean-2) 100%);color:#fff;padding:22px 20px 26px;position:relative;overflow:hidden}
+header:after{content:"";position:absolute;right:-60px;top:-60px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.06);pointer-events:none}
+.top,h1,.lead,.where{position:relative;z-index:1}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.logo{display:flex;align-items:center;gap:10px}
+.mark{width:40px;height:40px;border-radius:12px;border:1.5px dashed rgba(255,255,255,.6);display:grid;place-items:center;font-size:9px;line-height:1.1;text-align:center;opacity:.9}
+.hname{font-family:Fraunces,serif;font-size:20px;font-weight:600;line-height:1.1}
+.hsub{font-size:12px;opacity:.75;margin-top:2px}
+.langs{display:flex;background:rgba(255,255,255,.12);border-radius:999px;padding:3px}
+.langs button{border:0;background:transparent;color:#fff;font-size:12px;font-weight:600;padding:6px 9px;border-radius:999px;opacity:.75}
+.langs button.on{background:#fff;color:var(--ocean);opacity:1}
+h1{font-family:Fraunces,serif;font-weight:500;font-size:28px;margin:22px 0 4px}
+.lead{opacity:.8;margin:0;font-size:14px}
+.where{margin-top:14px;display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.14);border-radius:999px;padding:7px 12px;font-size:13px;font-weight:500}
+.where button{border:0;background:#fff;color:var(--ocean);border-radius:999px;padding:3px 9px;font-size:12px;font-weight:600}
+nav{position:sticky;top:0;z-index:5;background:var(--sand);border-bottom:1px solid var(--line);display:flex;gap:6px;overflow-x:auto;padding:10px 14px;scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+nav button{flex:none;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:8px 14px;font-size:13px;font-weight:500;white-space:nowrap}
+nav button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.filters{padding:12px 16px 0}
+.ftoggle{border:0;background:transparent;color:var(--ocean);font-weight:600;font-size:13px;padding:4px 0}
+.fwrap{display:none;flex-wrap:wrap;gap:6px;margin-top:8px}
+.fwrap.open{display:flex}
+.chip{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:5px 10px;font-size:12px}
+.chip.on{background:#fbe6e1;border-color:var(--coral);color:#9b3a26;text-decoration:line-through}
+.fnote{font-size:12px;color:var(--muted);width:100%;margin-top:2px}
+main{padding:4px 16px}
+section{padding-top:18px;scroll-margin-top:60px}
+h2{font-family:Fraunces,serif;font-weight:500;font-size:22px;margin:4px 0 2px}
+.hours{font-size:12px;color:var(--muted);margin-bottom:10px}
+[data-ty="room"],[data-dt="room"]{display:none!important}
+.item{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:10px;display:flex;gap:12px}
+.item.hidden{display:none}
+.ic{width:56px;height:56px;flex:none;border-radius:14px;display:grid;place-items:center;font-size:28px;background:#f1e7d8}
+.body{flex:1;min-width:0}
+.row{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.name{font-weight:600;font-size:15px}
+.price{font-weight:600;white-space:nowrap;color:var(--ocean)}
+.desc{color:var(--muted);font-size:13px;margin:3px 0 8px;line-height:1.4}
+.meta{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.tag{font-size:11px;font-weight:600;border-radius:6px;padding:2px 6px}
+.tag.pop{background:#fdebd3;color:#9a5a12}
+.tag.veg{background:#e3f0e4;color:var(--leaf)}
+.al{font-size:13px;cursor:help}
+.qty{display:flex;align-items:center;gap:8px;margin-left:auto}
+.qb{width:32px;height:32px;border-radius:50%;border:0;background:var(--ocean);color:#fff;font-size:18px;line-height:1;display:grid;place-items:center}
+.qb.minus{background:#e8eef0;color:var(--ocean)}
+.qn{min-width:16px;text-align:center;font-weight:600}
+.legend{margin:20px 0 10px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px}
+.legend h3{margin:0 0 8px;font-size:14px}
+.lg{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;font-size:12px;color:var(--muted)}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:16px 0 4px}
+/* ordering */
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:10;padding:10px 14px calc(12px + env(safe-area-inset-bottom));background:linear-gradient(transparent,var(--sand) 30%)}
+.bar .inner{display:flex;gap:8px;max-width:640px;margin:0 auto}
+.svc{flex:none;border:1px solid var(--line);background:var(--card);border-radius:14px;padding:0 12px;font-size:12px;font-weight:600;height:50px}
+.cartbtn{flex:1;border:0;background:var(--coral);color:#fff;border-radius:14px;height:50px;font-weight:600;display:flex;justify-content:space-between;align-items:center;padding:0 16px;box-shadow:0 6px 18px rgba(226,114,91,.35)}
+.cartbtn:disabled{background:#c9c2b8;box-shadow:none}
+.badge{background:rgba(255,255,255,.25);border-radius:8px;padding:2px 8px;margin-right:8px}
+.shade{position:fixed;inset:0;background:rgba(20,28,30,.45);z-index:20;display:none}
+.shade.open{display:block}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:21;background:var(--card);border-radius:22px 22px 0 0;max-height:88vh;overflow:auto;padding:8px 18px calc(18px + env(safe-area-inset-bottom));transform:translateY(105%);transition:transform .28s ease;max-width:640px;margin:0 auto}
+.sheet.open{transform:none}
+.grab{width:40px;height:4px;background:var(--line);border-radius:4px;margin:6px auto 12px}
+.sheet h3{font-family:Fraunces,serif;font-weight:500;font-size:22px;margin:0 0 4px}
+.line{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.line .n{flex:1}
+.line .p{font-weight:600}
+textarea,input[type=text]{width:100%;border:1px solid var(--line);border-radius:12px;padding:10px;font:inherit;background:#fff;margin-top:6px}
+.locbox{margin-top:14px;background:#f6efe4;border-radius:14px;padding:12px}
+.seg{display:flex;gap:8px;margin:8px 0}
+.seg button{flex:1;border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px;font-weight:600}
+.seg button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+#dn{font-size:18px;font-weight:600;margin-top:0}
+#dn.bad{border-color:var(--coral);box-shadow:0 0 0 3px rgba(226,114,91,.2)}
+.err{display:none;color:#b0442c;font-size:12px;margin-top:6px}
+.tot{display:flex;justify-content:space-between;font-weight:600;font-size:17px;margin:14px 0}
+.primary{width:100%;border:0;background:var(--ocean);color:#fff;border-radius:14px;height:52px;font-weight:600;font-size:16px}
+.ghost{width:100%;border:0;background:transparent;color:var(--muted);height:44px;margin-top:4px}
+.small{font-size:12px;color:var(--muted)}
+.steps{margin:18px 0}
+.st{display:flex;gap:12px;align-items:center;padding:10px 0;color:var(--muted)}
+.dot{width:26px;height:26px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font-size:13px;flex:none}
+.st.done{color:var(--ink)} .st.done .dot{background:var(--leaf);border-color:var(--leaf);color:#fff}
+.st.now{color:var(--ink);font-weight:600} .st.now .dot{border-color:var(--coral);animation:pulse 1.2s infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 6px rgba(226,114,91,.2)}}
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:12px 16px;border-radius:12px;font-size:14px;opacity:0;transition:.25s;z-index:30;width:max-content;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%)}
+.big{font-size:44px;text-align:center;margin:8px 0}
+.center{text-align:center}
+</style>
+</head>
+<body>
+<div class="demo" id="demoBanner"></div>
+<header>
+  <div class="top">
+    <div class="logo">
+      <div class="mark">LOGO</div>
+      <div><div class="hname">Sunset Terrace</div><div class="hsub">Bar · Costa Adeje</div></div>
+    </div>
+    <div class="langs" id="langs"></div>
+  </div>
+  <h1 id="h1"></h1>
+  <p class="lead" id="lead"></p>
+  <div class="where" id="where" style="display:none"></div>
+</header>
+<nav id="nav"></nav>
+<div class="filters">
+  <button class="ftoggle" id="ftoggle"></button>
+  <div class="fwrap" id="fwrap"></div>
+</div>
+<main id="main"></main>
+<div class="bar" id="bar" style="display:none">
+  <div class="inner">
+    <button class="svc" id="callBtn"></button>
+    <button class="cartbtn" id="cartBtn" disabled></button>
+  </div>
+</div>
+<div class="shade" id="shade"></div>
+<div class="sheet" id="sheet"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const ORDERING = true;
+
+const L = ["en","es","de","it"];
+const LN = {en:"EN",es:"ES",de:"DE",it:"IT"};
+
+const UI = {
+  demo:{en:"DEMO — real menu, example venue name. Allergens to be confirmed.",es:"DEMO — carta real, nombre de ejemplo. Alérgenos por confirmar.",de:"DEMO — echte Karte, Beispielname. Allergene noch zu bestätigen.",it:"DEMO — menù reale, nome di esempio. Allergeni da confermare."},
+  demoO:{en:"DEMO — real menu, example venue name. Allergens to be confirmed.",es:"DEMO — carta real, nombre de ejemplo. Alérgenos por confirmar.",de:"DEMO — echte Karte, Beispielname. Allergene noch zu bestätigen.",it:"DEMO — menù reale, nome di esempio. Allergeni da confermare."},
+  h1:{en:"Our menu",es:"Nuestra carta",de:"Unsere Speisekarte",it:"Il nostro menù"},
+  lead:{en:"Cocktails and Italian cooking on the terrace.",es:"Cócteles y cocina italiana en la terraza.",de:"Cocktails und italienische Küche auf der Terrasse.",it:"Cocktail e cucina italiana in terrazza."},
+  leadO:{en:"Choose your dishes and order straight from your phone.",es:"Elige tus platos y pide desde el móvil.",de:"Gerichte wählen und direkt per Handy bestellen.",it:"Scegli i piatti e ordina direttamente dal telefono."},
+  table:{en:"Table",es:"Mesa",de:"Tisch",it:"Tavolo"},
+  room:{en:"Room",es:"Habitación",de:"Zimmer",it:"Camera"},
+  change:{en:"Change",es:"Cambiar",de:"Ändern",it:"Cambia"},
+  setLoc:{en:"Set your table",es:"Indica tu mesa",de:"Tisch angeben",it:"Indica il tavolo"},
+  filt:{en:"Allergies? Hide dishes containing…",es:"¿Alergias? Ocultar platos con…",de:"Allergien? Gerichte ausblenden mit…",it:"Allergie? Nascondi i piatti con…"},
+  filtClose:{en:"Hide allergen filter",es:"Cerrar filtro de alérgenos",de:"Allergenfilter schließen",it:"Chiudi filtro allergeni"},
+  hiddenN:{en:"dishes hidden",es:"platos ocultos",de:"Gerichte ausgeblendet",it:"piatti nascosti"},
+  legend:{en:"Allergens (EU Reg. 1169/2011)",es:"Alérgenos (Reg. UE 1169/2011)",de:"Allergene (EU-VO 1169/2011)",it:"Allergeni (Reg. UE 1169/2011)"},
+  legendNote:{en:"Please tell our staff about any allergy or intolerance.",es:"Informe al personal de cualquier alergia o intolerancia.",de:"Bitte informieren Sie unser Personal über Allergien oder Unverträglichkeiten.",it:"Comunica al personale eventuali allergie o intolleranze."},
+  pop:{en:"Popular",es:"Popular",de:"Beliebt",it:"Il più scelto"},
+  veg:{en:"Vegetarian",es:"Vegetariano",de:"Vegetarisch",it:"Vegetariano"},
+  vegan:{en:"Vegan",es:"Vegano",de:"Vegan",it:"Vegano"},
+  call:{en:"🛎 Waiter",es:"🛎 Camarero",de:"🛎 Kellner",it:"🛎 Cameriere"},
+  view:{en:"View order",es:"Ver pedido",de:"Bestellung ansehen",it:"Vedi ordine"},
+  empty:{en:"Add dishes to order",es:"Añade platos para pedir",de:"Gerichte hinzufügen",it:"Aggiungi piatti per ordinare"},
+  yourOrder:{en:"Your order",es:"Tu pedido",de:"Ihre Bestellung",it:"Il tuo ordine"},
+  notes:{en:"Notes for the kitchen (optional)",es:"Notas para la cocina (opcional)",de:"Hinweise für die Küche (optional)",it:"Note per la cucina (facoltativo)"},
+  notesPh:{en:"e.g. no onion, well done…",es:"ej. sin cebolla, bien hecho…",de:"z. B. ohne Zwiebeln, durchgebraten…",it:"es. senza cipolla, ben cotto…"},
+  total:{en:"Total",es:"Total",de:"Gesamt",it:"Totale"},
+  send:{en:"Send order",es:"Enviar pedido",de:"Bestellung senden",it:"Invia ordine"},
+  back:{en:"Keep browsing",es:"Seguir mirando",de:"Weiter ansehen",it:"Continua a guardare"},
+  charge:{en:"Pay at the table or at the bar.",es:"Se paga en la mesa o en la barra.",de:"Bezahlung am Tisch oder an der Bar.",it:"Si paga al tavolo o al bancone."},
+  sent:{en:"Order sent!",es:"¡Pedido enviado!",de:"Bestellung gesendet!",it:"Ordine inviato!"},
+  orderNo:{en:"Order",es:"Pedido",de:"Bestellung",it:"Ordine"},
+  s1:{en:"Received",es:"Recibido",de:"Eingegangen",it:"Ricevuto"},
+  s2:{en:"Being prepared",es:"En preparación",de:"In Zubereitung",it:"In preparazione"},
+  s3:{en:"On its way",es:"En camino",de:"Unterwegs",it:"In arrivo"},
+  newOrder:{en:"Order something else",es:"Pedir algo más",de:"Noch etwas bestellen",it:"Ordina altro"},
+  demoSent:{en:"In the live version this order appears instantly on the kitchen / reception tablet.",es:"En la versión real el pedido aparece al instante en la tablet de cocina / recepción.",de:"In der Live-Version erscheint die Bestellung sofort auf dem Küchen-/Rezeptions-Tablet.",it:"Nella versione reale l'ordine arriva subito sul tablet della cucina / reception."},
+  callSent:{en:"A waiter is on the way 🛎",es:"Un camarero va hacia ti 🛎",de:"Ein Kellner ist unterwegs 🛎",it:"Un cameriere sta arrivando 🛎"},
+  where:{en:"Your table",es:"Tu mesa",de:"Ihr Tisch",it:"Il tuo tavolo"},
+  number:{en:"Number",es:"Número",de:"Nummer",it:"Numero"},
+  confirm:{en:"Confirm",es:"Confirmar",de:"Bestätigen",it:"Conferma"},
+  needLoc:{en:"Please enter your table number",es:"Indica el número de mesa",de:"Bitte Tischnummer angeben",it:"Indica il numero del tavolo"},
+  remove:{en:"Remove",es:"Quitar",de:"Entfernen",it:"Rimuovi"},
+  footer:{en:"Prices in € incl. IGIC",es:"Precios en € con IGIC incluido",de:"Preise in € inkl. IGIC",it:"Prezzi in € IGIC inclusa"}
+};
+
+const AL = {
+  gl:{e:"🌾",en:"Gluten",es:"Gluten",de:"Gluten",it:"Glutine"},
+  cr:{e:"🦐",en:"Crustaceans",es:"Crustáceos",de:"Krebstiere",it:"Crostacei"},
+  eg:{e:"🥚",en:"Eggs",es:"Huevos",de:"Eier",it:"Uova"},
+  fi:{e:"🐟",en:"Fish",es:"Pescado",de:"Fisch",it:"Pesce"},
+  pe:{e:"🥜",en:"Peanuts",es:"Cacahuetes",de:"Erdnüsse",it:"Arachidi"},
+  so:{e:"🫘",en:"Soy",es:"Soja",de:"Soja",it:"Soia"},
+  mi:{e:"🥛",en:"Milk",es:"Lácteos",de:"Milch",it:"Latte"},
+  nu:{e:"🌰",en:"Tree nuts",es:"Frutos de cáscara",de:"Schalenfrüchte",it:"Frutta a guscio"},
+  ce:{e:"🥬",en:"Celery",es:"Apio",de:"Sellerie",it:"Sedano"},
+  mu:{e:"🟡",en:"Mustard",es:"Mostaza",de:"Senf",it:"Senape"},
+  se:{e:"⚪",en:"Sesame",es:"Sésamo",de:"Sesam",it:"Sesamo"},
+  su:{e:"🍷",en:"Sulphites",es:"Sulfitos",de:"Sulfite",it:"Solfiti"},
+  lu:{e:"🌼",en:"Lupin",es:"Altramuces",de:"Lupinen",it:"Lupini"},
+  mo:{e:"🦪",en:"Molluscs",es:"Moluscos",de:"Weichtiere",it:"Molluschi"}
+};
+
+const CATS = [
+  {id:"cocktail",e:"\ud83c\udf79",n:{"it": "Cocktail", "en": "Cocktails", "es": "Cócteles", "de": "Cocktails"},h:{"it": "10:00 – 00:00", "en": "10:00 – 00:00", "es": "10:00 – 00:00", "de": "10:00 – 00:00"}},
+  {id:"wine",e:"\ud83c\udf77",n:{"it": "Vini", "en": "Wines", "es": "Vinos", "de": "Weine"},h:{"it": "10:00 – 00:00", "en": "10:00 – 00:00", "es": "10:00 – 00:00", "de": "10:00 – 00:00"}},
+  {id:"beer",e:"\ud83c\udf7a",n:{"it": "Birre", "en": "Beers", "es": "Cervezas", "de": "Biere"},h:{"it": "10:00 – 00:00", "en": "10:00 – 00:00", "es": "10:00 – 00:00", "de": "10:00 – 00:00"}},
+  {id:"soft",e:"\ud83e\udd64",n:{"it": "Bibite", "en": "Soft drinks", "es": "Refrescos", "de": "Softdrinks"},h:{"it": "10:00 – 00:00", "en": "10:00 – 00:00", "es": "10:00 – 00:00", "de": "10:00 – 00:00"}},
+  {id:"primi",e:"\ud83c\udf5d",n:{"it": "Primi piatti", "en": "Pasta", "es": "Pasta", "de": "Pasta"},h:{"it": "12:00 – 22:00", "en": "12:00 – 22:00", "es": "12:00 – 22:00", "de": "12:00 – 22:00"}},
+  {id:"secondi",e:"\ud83c\udf57",n:{"it": "Secondi piatti", "en": "Mains", "es": "Segundos", "de": "Hauptgerichte"},h:{"it": "12:00 – 22:00", "en": "12:00 – 22:00", "es": "12:00 – 22:00", "de": "12:00 – 22:00"}},
+  {id:"contorni",e:"\ud83e\udd57",n:{"it": "Contorni e insalate", "en": "Sides & salads", "es": "Guarniciones y ensaladas", "de": "Beilagen & Salate"},h:{"it": "12:00 – 22:00", "en": "12:00 – 22:00", "es": "12:00 – 22:00", "de": "12:00 – 22:00"}},
+  {id:"panini",e:"\ud83c\udf54",n:{"it": "Panini e burger", "en": "Burgers & sandwiches", "es": "Hamburguesas y bocadillos", "de": "Burger & Sandwiches"},h:{"it": "12:00 – 22:00", "en": "12:00 – 22:00", "es": "12:00 – 22:00", "de": "12:00 – 22:00"}}
+];
+
+const M = [
+ {c:"cocktail",i:"🍹",p:8,a:[],t:["pop"],n:{"it": "Mojito", "en": "Mojito", "es": "Mojito", "de": "Mojito"},d:{"it": "Rum, lime, menta e soda", "en": "Rum, lime, mint and soda", "es": "Ron, lima, hierbabuena y soda", "de": "Rum, Limette, Minze und Soda"}},
+ {c:"cocktail",i:"🍍",p:8,a:[],t:[],n:{"it": "Piña colada", "en": "Piña colada", "es": "Piña colada", "de": "Piña colada"},d:{"it": "Rum, ananas e cocco", "en": "Rum, pineapple and coconut", "es": "Ron, piña y coco", "de": "Rum, Ananas und Kokos"}},
+ {c:"cocktail",i:"🥃",p:8,a:["su"],t:[],n:{"it": "Negroni", "en": "Negroni", "es": "Negroni", "de": "Negroni"},d:{"it": "Gin, Campari e vermouth rosso", "en": "Gin, Campari and red vermouth", "es": "Ginebra, Campari y vermut rojo", "de": "Gin, Campari und roter Wermut"}},
+ {c:"cocktail",i:"🍸",p:8,a:[],t:[],n:{"it": "Long Island", "en": "Long Island", "es": "Long Island", "de": "Long Island"},d:{"it": "Vodka, rum, gin, tequila, triple sec e cola", "en": "Vodka, rum, gin, tequila, triple sec and cola", "es": "Vodka, ron, ginebra, tequila, triple sec y cola", "de": "Wodka, Rum, Gin, Tequila, Triple Sec und Cola"}},
+ {c:"cocktail",i:"🥃",p:8,a:[],t:[],n:{"it": "4 Bianchi", "en": "4 Bianchi", "es": "4 Bianchi", "de": "4 Bianchi"},d:{"it": "Quattro distillati bianchi", "en": "Four white spirits", "es": "Cuatro destilados blancos", "de": "Vier klare Spirituosen"}},
+ {c:"cocktail",i:"🍑",p:8,a:[],t:[],n:{"it": "Sex on the beach", "en": "Sex on the beach", "es": "Sex on the beach", "de": "Sex on the beach"},d:{"it": "Vodka, pesca, arancia e mirtillo", "en": "Vodka, peach, orange and cranberry", "es": "Vodka, melocotón, naranja y arándano", "de": "Wodka, Pfirsich, Orange und Cranberry"}},
+ {c:"cocktail",i:"🍋",p:8,a:[],t:[],n:{"it": "Gin tonic", "en": "Gin & tonic", "es": "Gin tonic", "de": "Gin Tonic"},d:{"it": "Gin e acqua tonica", "en": "Gin and tonic water", "es": "Ginebra y tónica", "de": "Gin und Tonic Water"}},
+ {c:"cocktail",i:"🍊",p:8,a:["su"],t:["pop"],n:{"it": "Aperol spritz", "en": "Aperol spritz", "es": "Aperol spritz", "de": "Aperol Spritz"},d:{"it": "Aperol, prosecco e soda", "en": "Aperol, prosecco and soda", "es": "Aperol, prosecco y soda", "de": "Aperol, Prosecco und Soda"}},
+ {c:"cocktail",i:"🍹",p:8,a:["su"],t:[],n:{"it": "Campari spritz", "en": "Campari spritz", "es": "Campari spritz", "de": "Campari Spritz"},d:{"it": "Campari, prosecco e soda", "en": "Campari, prosecco and soda", "es": "Campari, prosecco y soda", "de": "Campari, Prosecco und Soda"}},
+ {c:"cocktail",i:"🥃",p:8,a:[],t:[],n:{"it": "Campari e gin", "en": "Campari & gin", "es": "Campari y ginebra", "de": "Campari & Gin"},d:{"it": "", "en": "", "es": "", "de": ""}},
+ {c:"wine",i:"🍷",p:4,a:["su"],t:[],n:{"it": "Calice di vino rosso", "en": "Glass of red wine", "es": "Copa de vino tinto", "de": "Glas Rotwein"},d:{"it": "", "en": "", "es": "", "de": ""}},
+ {c:"wine",i:"🥂",p:4,a:["su"],t:[],n:{"it": "Calice di vino bianco", "en": "Glass of white wine", "es": "Copa de vino blanco", "de": "Glas Weißwein"},d:{"it": "", "en": "", "es": "", "de": ""}},
+ {c:"wine",i:"🌸",p:4,a:["su"],t:[],n:{"it": "Calice di vino rosé", "en": "Glass of rosé", "es": "Copa de vino rosado", "de": "Glas Rosé"},d:{"it": "", "en": "", "es": "", "de": ""}},
+ {c:"wine",i:"🍾",p:4,a:["su"],t:[],n:{"it": "Calice di prosecco", "en": "Glass of prosecco", "es": "Copa de prosecco", "de": "Glas Prosecco"},d:{"it": "", "en": "", "es": "", "de": ""}},
+ {c:"beer",i:"🍺",p:3,a:["gl"],t:[],n:{"it": "Heineken", "en": "Heineken", "es": "Heineken", "de": "Heineken"},d:{"it": "", "en": "", "es": "", "de": ""}},
+ {c:"beer",i:"🍺",p:3,a:["gl"],t:[],n:{"it": "Corona", "en": "Corona", "es": "Corona", "de": "Corona"},d:{"it": "", "en": "", "es": "", "de": ""}},
+ {c:"beer",i:"🍺",p:3,a:["gl"],t:[],n:{"it": "Desperados", "en": "Desperados", "es": "Desperados", "de": "Desperados"},d:{"it": "", "en": "", "es": "", "de": ""}},
+ {c:"beer",i:"🍺",p:3,a:["gl"],t:[],n:{"it": "Peroni", "en": "Peroni", "es": "Peroni", "de": "Peroni"},d:{"it": "", "en": "", "es": "", "de": ""}},
+ {c:"soft",i:"🥤",p:2,a:[],t:[],n:{"it": "Coca-Cola", "en": "Coca-Cola", "es": "Coca-Cola", "de": "Coca-Cola"},d:{"it": "Lattina", "en": "Can", "es": "Lata", "de": "Dose"}},
+ {c:"soft",i:"🥤",p:2,a:[],t:[],n:{"it": "Coca-Cola Zero", "en": "Coca-Cola Zero", "es": "Coca-Cola Zero", "de": "Coca-Cola Zero"},d:{"it": "Lattina", "en": "Can", "es": "Lata", "de": "Dose"}},
+ {c:"soft",i:"🍊",p:2,a:[],t:[],n:{"it": "Fanta arancia", "en": "Fanta orange", "es": "Fanta naranja", "de": "Fanta Orange"},d:{"it": "Lattina", "en": "Can", "es": "Lata", "de": "Dose"}},
+ {c:"soft",i:"🍋",p:2,a:[],t:[],n:{"it": "Fanta limone", "en": "Fanta lemon", "es": "Fanta limón", "de": "Fanta Zitrone"},d:{"it": "Lattina", "en": "Can", "es": "Lata", "de": "Dose"}},
+ {c:"soft",i:"🍊",p:2,a:[],t:[],n:{"it": "Aquarius arancia", "en": "Aquarius orange", "es": "Aquarius naranja", "de": "Aquarius Orange"},d:{"it": "Lattina", "en": "Can", "es": "Lata", "de": "Dose"}},
+ {c:"soft",i:"🥭",p:2,a:[],t:[],n:{"it": "Nestea mango e ananas", "en": "Nestea mango & pineapple", "es": "Nestea mango y piña", "de": "Nestea Mango-Ananas"},d:{"it": "Lattina", "en": "Can", "es": "Lata", "de": "Dose"}},
+ {c:"soft",i:"🍋",p:2,a:[],t:[],n:{"it": "Nestea limone", "en": "Nestea lemon", "es": "Nestea limón", "de": "Nestea Zitrone"},d:{"it": "Lattina", "en": "Can", "es": "Lata", "de": "Dose"}},
+ {c:"soft",i:"🫧",p:2,a:[],t:[],n:{"it": "Acqua tonica", "en": "Tonic water", "es": "Tónica", "de": "Tonic Water"},d:{"it": "Lattina", "en": "Can", "es": "Lata", "de": "Dose"}},
+ {c:"soft",i:"⚡",p:2.5,a:[],t:[],n:{"it": "Red Bull", "en": "Red Bull", "es": "Red Bull", "de": "Red Bull"},d:{"it": "Lattina", "en": "Can", "es": "Lata", "de": "Dose"}},
+ {c:"primi",i:"🍅",p:8,a:["gl"],t:["veg"],n:{"it": "Spaghetti o penne al pomodoro fresco e basilico", "en": "Spaghetti or penne with fresh tomato & basil", "es": "Espaguetis o macarrones con tomate fresco y albahaca", "de": "Spaghetti oder Penne mit frischen Tomaten & Basilikum"},d:{"it": "", "en": "", "es": "", "de": ""}},
+ {c:"primi",i:"🍝",p:8,a:["gl", "eg", "mi"],t:["pop"],n:{"it": "Spaghetti alla carbonara romana", "en": "Spaghetti carbonara (Roman style)", "es": "Espaguetis a la carbonara romana", "de": "Spaghetti Carbonara nach römischer Art"},d:{"it": "Guanciale, uova e pecorino", "en": "Guanciale, egg and pecorino", "es": "Guanciale, huevo y pecorino", "de": "Guanciale, Ei und Pecorino"}},
+ {c:"primi",i:"🌿",p:8,a:["gl", "mi", "nu"],t:["veg"],n:{"it": "Spaghetti al pesto", "en": "Spaghetti with pesto", "es": "Espaguetis al pesto", "de": "Spaghetti mit Pesto"},d:{"it": "", "en": "", "es": "", "de": ""}},
+ {c:"primi",i:"🍝",p:8,a:["gl", "mi"],t:[],n:{"it": "Spaghetti o penne all'amatriciana", "en": "Spaghetti or penne amatriciana", "es": "Espaguetis o macarrones a la amatriciana", "de": "Spaghetti oder Penne Amatriciana"},d:{"it": "Pomodoro e guanciale", "en": "Tomato and guanciale", "es": "Tomate y guanciale", "de": "Tomate und Guanciale"}},
+ {c:"primi",i:"🫒",p:8,a:["gl"],t:["veg"],n:{"it": "Spaghetti o penne alla puttanesca", "en": "Spaghetti or penne puttanesca", "es": "Espaguetis o macarrones a la puttanesca", "de": "Spaghetti oder Penne Puttanesca"},d:{"it": "Olive, capperi e basilico", "en": "Olives, capers and basil", "es": "Aceitunas, alcaparras y albahaca", "de": "Oliven, Kapern und Basilikum"}},
+ {c:"primi",i:"🍄",p:8,a:["gl"],t:[],n:{"it": "Spaghetti o penne salsiccia, funghi e piselli", "en": "Spaghetti or penne with sausage, mushrooms & peas", "es": "Espaguetis o macarrones con salchicha, champiñones y guisantes", "de": "Spaghetti oder Penne mit Wurst, Pilzen & Erbsen"},d:{"it": "", "en": "", "es": "", "de": ""}},
+ {c:"primi",i:"🐟",p:8,a:["gl", "fi"],t:[],n:{"it": "Spaghetti o penne al tonno", "en": "Spaghetti or penne with tuna", "es": "Espaguetis o macarrones con atún", "de": "Spaghetti oder Penne mit Thunfisch"},d:{"it": "Tonno, olive nere e capperi", "en": "Tuna, black olives and capers", "es": "Atún, aceitunas negras y alcaparras", "de": "Thunfisch, schwarze Oliven und Kapern"}},
+ {c:"primi",i:"🫕",p:8,a:["gl", "eg", "mi", "ce"],t:["pop"],n:{"it": "Lasagna alla bolognese", "en": "Lasagne bolognese", "es": "Lasaña boloñesa", "de": "Lasagne Bolognese"},d:{"it": "", "en": "", "es": "", "de": ""}},
+ {c:"primi",i:"🐚",p:10,a:["gl", "mo"],t:[],n:{"it": "Spaghetti alle vongole", "en": "Spaghetti with clams", "es": "Espaguetis con almejas", "de": "Spaghetti mit Venusmuscheln"},d:{"it": "", "en": "", "es": "", "de": ""}},
+ {c:"primi",i:"🦐",p:10,a:["gl", "cr"],t:[],n:{"it": "Spaghetti con gamberi", "en": "Spaghetti with prawns", "es": "Espaguetis con gambas", "de": "Spaghetti mit Garnelen"},d:{"it": "", "en": "", "es": "", "de": ""}},
+ {c:"secondi",i:"🍗",p:6,a:["gl", "eg"],t:[],n:{"it": "Cotoletta di pollo", "en": "Breaded chicken cutlet", "es": "Escalope de pollo empanado", "de": "Paniertes Hähnchenschnitzel"},d:{"it": "", "en": "", "es": "", "de": ""}},
+ {c:"secondi",i:"🍔",p:6,a:[],t:[],n:{"it": "Hamburger di manzo o misto maiale e manzo", "en": "Beef or pork & beef patty", "es": "Hamburguesa de ternera o mixta cerdo y ternera", "de": "Patty vom Rind oder Rind & Schwein"},d:{"it": "", "en": "", "es": "", "de": ""}},
+ {c:"secondi",i:"🍗",p:6,a:[],t:[],n:{"it": "Petto di pollo alla piastra", "en": "Grilled chicken breast", "es": "Pechuga de pollo a la plancha", "de": "Gegrillte Hähnchenbrust"},d:{"it": "", "en": "", "es": "", "de": ""}},
+ {c:"secondi",i:"🐟",p:6,a:["fi", "gl", "eg"],t:[],n:{"it": "Merluzzo impanato", "en": "Breaded cod", "es": "Bacalao empanado", "de": "Panierter Kabeljau"},d:{"it": "", "en": "", "es": "", "de": ""}},
+ {c:"secondi",i:"🍖",p:8,a:["gl", "eg", "mi"],t:[],n:{"it": "Polpette al sugo", "en": "Meatballs in tomato sauce", "es": "Albóndigas en salsa de tomate", "de": "Fleischbällchen in Tomatensoße"},d:{"it": "", "en": "", "es": "", "de": ""}},
+ {c:"secondi",i:"🥩",p:8,a:[],t:[],n:{"it": "Carne alla pizzaiola", "en": "Beef pizzaiola", "es": "Carne a la pizzaiola", "de": "Rindfleisch Pizzaiola"},d:{"it": "Con pomodoro e origano", "en": "With tomato and oregano", "es": "Con tomate y orégano", "de": "Mit Tomate und Oregano"}},
+ {c:"contorni",i:"🍆",p:8,a:["mi", "gl", "eg"],t:["pop", "veg"],n:{"it": "Parmigiana di melanzane", "en": "Aubergine parmigiana", "es": "Parmesana de berenjena", "de": "Auberginen-Parmigiana"},d:{"it": "", "en": "", "es": "", "de": ""}},
+ {c:"contorni",i:"🥒",p:8,a:["mi", "gl", "eg"],t:["veg"],n:{"it": "Parmigiana di zucchine", "en": "Courgette parmigiana", "es": "Parmesana de calabacín", "de": "Zucchini-Parmigiana"},d:{"it": "", "en": "", "es": "", "de": ""}},
+ {c:"contorni",i:"🍟",p:5,a:[],t:["vegan"],n:{"it": "Patatine fritte", "en": "French fries", "es": "Patatas fritas", "de": "Pommes frites"},d:{"it": "", "en": "", "es": "", "de": ""}},
+ {c:"contorni",i:"🥔",p:5,a:[],t:["vegan"],n:{"it": "Patate saltate in padella", "en": "Pan-fried potatoes", "es": "Patatas salteadas", "de": "Bratkartoffeln"},d:{"it": "", "en": "", "es": "", "de": ""}},
+ {c:"contorni",i:"🥬",p:5,a:[],t:["vegan"],n:{"it": "Insalata verde", "en": "Green salad", "es": "Ensalada verde", "de": "Grüner Salat"},d:{"it": "", "en": "", "es": "", "de": ""}},
+ {c:"contorni",i:"🥗",p:8,a:["fi"],t:[],n:{"it": "Insalatona", "en": "Big salad", "es": "Ensalada completa", "de": "Großer Salat"},d:{"it": "Insalata verde, pomodoro, olive, cipolla e tonno", "en": "Green salad, tomato, olives, onion and tuna", "es": "Ensalada verde, tomate, aceitunas, cebolla y atún", "de": "Grüner Salat, Tomate, Oliven, Zwiebel und Thunfisch"}},
+ {c:"panini",i:"🍔",p:8,a:["gl", "mi"],t:["pop"],n:{"it": "Hamburger cheddar e bacon", "en": "Cheddar & bacon burger", "es": "Hamburguesa con cheddar y bacon", "de": "Cheddar-Bacon-Burger"},d:{"it": "Con insalata e pomodoro", "en": "With lettuce and tomato", "es": "Con lechuga y tomate", "de": "Mit Salat und Tomate"}},
+ {c:"panini",i:"🍔",p:8,a:["gl", "mi"],t:[],n:{"it": "Hamburger cheddar e patatine", "en": "Cheddar burger with fries", "es": "Hamburguesa con cheddar y patatas", "de": "Cheddar-Burger mit Pommes"},d:{"it": "", "en": "", "es": "", "de": ""}},
+ {c:"panini",i:"🥪",p:10,a:["gl", "mi", "eg"],t:["veg"],n:{"it": "Panino con parmigiana di melanzane", "en": "Aubergine parmigiana sandwich", "es": "Bocadillo de parmesana de berenjena", "de": "Sandwich mit Auberginen-Parmigiana"},d:{"it": "", "en": "", "es": "", "de": ""}},
+ {c:"panini",i:"🥪",p:10,a:["gl", "mi", "eg"],t:["veg"],n:{"it": "Panino con parmigiana di zucchine", "en": "Courgette parmigiana sandwich", "es": "Bocadillo de parmesana de calabacín", "de": "Sandwich mit Zucchini-Parmigiana"},d:{"it": "", "en": "", "es": "", "de": ""}},
+ {c:"panini",i:"🌭",p:8,a:["gl"],t:[],n:{"it": "Panino salsiccia e friarielli", "en": "Sausage & friarielli sandwich", "es": "Bocadillo de salchicha y grelos", "de": "Sandwich mit Wurst und Friarielli"},d:{"it": "Tipico napoletano", "en": "Neapolitan classic", "es": "Clásico napolitano", "de": "Neapolitanischer Klassiker"}},
+ {c:"panini",i:"🥪",p:8,a:["gl", "mi"],t:[],n:{"it": "Panino prosciutto e formaggio", "en": "Ham & cheese sandwich", "es": "Bocadillo de jamón y queso", "de": "Schinken-Käse-Sandwich"},d:{"it": "", "en": "", "es": "", "de": ""}},
+ {c:"panini",i:"🥪",p:8,a:["gl"],t:[],n:{"it": "Panino salsiccia e patate saltate", "en": "Sausage & sautéed potato sandwich", "es": "Bocadillo de salchicha y patatas salteadas", "de": "Sandwich mit Wurst und Bratkartoffeln"},d:{"it": "", "en": "", "es": "", "de": ""}},
+ {c:"panini",i:"🌭",p:4,a:["gl", "mu"],t:[],n:{"it": "Hot dog", "en": "Hot dog", "es": "Perrito caliente", "de": "Hotdog"},d:{"it": "", "en": "", "es": "", "de": ""}}
+];
+M.forEach((m,i)=>m.id=i);
+
+let lang = (()=>{try{return localStorage.getItem("menu-lang")}catch(e){return null}})() || ((navigator.language||"en").slice(0,2));
+if(!L.includes(lang)) lang="en";
+let excl = new Set();
+let cart = {};
+let loc = null; // {type:'table'|'room', n:'12'}
+let fOpen = false;
+
+const $ = s=>document.querySelector(s);
+const t = k=>UI[k][lang];
+const eur = v=>v.toLocaleString(lang==="en"?"en-GB":lang,{style:"currency",currency:"EUR"});
+
+function parseHash(){
+  const h = decodeURIComponent(location.hash.slice(1));
+  let m = h.match(/^(table|tavolo|mesa|tisch)-?(\w+)$/i); if(m) return {type:"table",n:m[2]};
+  m = h.match(/^(room|camera|habitacion|zimmer)-?(\w+)$/i); if(m) return {type:"room",n:m[2]};
+  return null;
+}
+
+function render(){
+  document.documentElement.lang = lang;
+  $("#demoBanner").textContent = ORDERING ? t("demoO") : t("demo");
+  $("#langs").innerHTML = L.map(l=>`<button class="${l===lang?"on":""}" data-l="${l}">${LN[l]}</button>`).join("");
+  $("#h1").textContent = t("h1");
+  $("#lead").textContent = ORDERING ? t("leadO") : t("lead");
+  renderWhere();
+  $("#nav").innerHTML = CATS.map((c,i)=>`<button data-c="${c.id}" class="${i===0?"on":""}">${c.e} ${c.n[lang]}</button>`).join("");
+  renderFilters();
+  renderMain();
+  renderBar();
+}
+
+function renderWhere(){
+  const w = $("#where");
+  if(!ORDERING){w.style.display="none";return}
+  w.style.display="inline-flex";
+  w.innerHTML = loc
+    ? `📍 ${t(loc.type)} ${loc.n} <button id="chg">${t("change")}</button>`
+    : `📍 <button id="chg">${t("setLoc")}</button>`;
+}
+
+function renderFilters(){
+  $("#ftoggle").textContent = (fOpen?"▾ ":"▸ ") + (fOpen?t("filtClose"):t("filt"));
+  const hidden = M.filter(m=>m.a.some(a=>excl.has(a))).length;
+  $("#fwrap").className = "fwrap"+(fOpen?" open":"");
+  $("#fwrap").innerHTML = Object.entries(AL).map(([k,v])=>`<button class="chip ${excl.has(k)?"on":""}" data-a="${k}">${v.e} ${v[lang]}</button>`).join("")
+    + (excl.size?`<div class="fnote">${hidden} ${t("hiddenN")}</div>`:"");
+}
+
+function itemHTML(m){
+  const tags = m.t.map(x=>`<span class="tag ${x==="pop"?"pop":"veg"}">${x==="pop"?"★ ":"🌱 "}${t(x)}</span>`).join("");
+  const als = m.a.map(a=>`<span class="al" title="${AL[a][lang]}">${AL[a].e}</span>`).join("");
+  const q = cart[m.id]||0;
+  const ctrl = ORDERING ? `<div class="qty">${q?`<button class="qb minus" data-m="${m.id}" data-d="-1" aria-label="-">−</button><span class="qn">${q}</span>`:""}<button class="qb" data-m="${m.id}" data-d="1" aria-label="+">+</button></div>` : "";
+  const hide = m.a.some(a=>excl.has(a));
+  return `<div class="item ${hide?"hidden":""}"><div class="ic">${m.i}</div><div class="body">
+    <div class="row"><div class="name">${m.n[lang]}</div><div class="price">${eur(m.p)}</div></div>
+    ${m.d[lang]?`<div class="desc">${m.d[lang]}</div>`:`<div style="height:8px"></div>`}
+    <div class="meta">${tags}${als}${ctrl}</div></div></div>`;
+}
+
+function renderMain(){
+  $("#main").innerHTML = CATS.map(c=>`<section id="s-${c.id}"><h2>${c.e} ${c.n[lang]}</h2><div class="hours">🕐 ${c.h[lang]}</div>${M.filter(m=>m.c===c.id).map(itemHTML).join("")}</section>`).join("")
+   + `<div class="legend"><h3>${t("legend")}</h3><div class="lg">${Object.values(AL).map(v=>`<span>${v.e} ${v[lang]}</span>`).join("")}</div><p class="small" style="margin:10px 0 0">${t("legendNote")}</p></div>`
+   + `<footer>${t("footer")}</footer>`;
+}
+
+function count(){return Object.values(cart).reduce((a,b)=>a+b,0)}
+function sum(){return Object.entries(cart).reduce((s,[id,q])=>s+M[id].p*q,0)}
+
+function renderBar(){
+  if(!ORDERING) return;
+  $("#bar").style.display="block";
+  $("#callBtn").textContent = t("call");
+  const n = count(), b = $("#cartBtn");
+  b.disabled = !n;
+  b.innerHTML = n ? `<span><span class="badge">${n}</span>${t("view")}</span><span>${eur(sum())}</span>` : `<span>${t("empty")}</span><span></span>`;
+}
+
+function openSheet(html){ $("#sheet").innerHTML = `<div class="grab"></div>`+html; $("#sheet").classList.add("open"); $("#shade").classList.add("open"); }
+function closeSheet(){ $("#sheet").classList.remove("open"); $("#shade").classList.remove("open"); }
+
+function toast(msg){ const el=$("#toast"); el.textContent=msg; el.classList.add("show"); clearTimeout(toast._t); toast._t=setTimeout(()=>el.classList.remove("show"),2600); }
+
+function locSheet(after){
+  const ty = loc?loc.type:"table";
+  openSheet(`<h3>${t("where")}</h3>
+   <div style="display:flex;gap:8px;margin:12px 0">
+     <button class="chip ${ty==="table"?"on2":""}" data-ty="table" style="flex:1;padding:12px">🍽 ${t("table")}</button>
+     <button class="chip ${ty==="room"?"on2":""}" data-ty="room" style="flex:1;padding:12px">🛏 ${t("room")}</button>
+   </div>
+   <label class="small">${t("number")}</label>
+   <input type="text" id="locN" inputmode="numeric" value="${loc?loc.n:""}" placeholder="12">
+   <div style="height:14px"></div>
+   <button class="primary" id="locOk">${t("confirm")}</button>`);
+  let sel = ty;
+  const paint=()=>document.querySelectorAll("[data-ty]").forEach(b=>{b.style.background=b.dataset.ty===sel?"var(--ink)":"";b.style.color=b.dataset.ty===sel?"#fff":""});
+  paint();
+  document.querySelectorAll("[data-ty]").forEach(b=>b.onclick=()=>{sel=b.dataset.ty;paint()});
+  $("#locOk").onclick=()=>{
+    const n=$("#locN").value.trim(); if(!n){$("#locN").focus();return}
+    loc={type:sel,n}; draft.type=sel; draft.n=n; renderWhere(); closeSheet(); if(after) after();
+  };
+}
+
+let draft = {type:null, n:"", note:""};
+function cartSheet(){
+  if(!draft.type){ draft.type = loc?loc.type:"table"; draft.n = loc?String(loc.n):""; }
+  const lines = Object.entries(cart).map(([id,q])=>{const m=M[id];return `<div class="line"><div class="n"><b>${q}×</b> ${m.n[lang]}</div><div class="qty"><button class="qb minus" data-m="${id}" data-d="-1">−</button><button class="qb" data-m="${id}" data-d="1">+</button></div><div class="p">${eur(m.p*q)}</div></div>`}).join("");
+  const esc = v=>String(v).replace(/[<>&"]/g,"");
+  openSheet(`<h3>${t("yourOrder")}</h3>
+    ${lines}
+    <div class="locbox">
+      <div class="small" style="font-weight:600;color:var(--ink)">📍 ${t("where")} *</div>
+      <div class="seg">
+        <button data-dt="table" class="${draft.type==="table"?"on":""}">🍽 ${t("table")}</button>
+        <button data-dt="room" class="${draft.type==="room"?"on":""}">🛏 ${t("room")}</button>
+      </div>
+      <input type="text" id="dn" inputmode="numeric" maxlength="8" placeholder="${t("number")}" value="${esc(draft.n)}">
+      <div class="err" id="locErr">${t("needLoc")}</div>
+    </div>
+    <div style="margin-top:14px"><label class="small">${t("notes")}</label><textarea id="note" rows="2" maxlength="300" placeholder="${t("notesPh")}">${esc(draft.note)}</textarea></div>
+    <div class="tot"><span>${t("total")}</span><span>${eur(sum())}</span></div>
+    <button class="primary" id="sendBtn">${t("send")} · ${eur(sum())}</button>
+    <p class="small center">${t("charge")}</p>
+    <button class="ghost" id="backBtn">${t("back")}</button>`);
+  $("#dn").oninput=e=>{draft.n=e.target.value.trim(); $("#dn").classList.remove("bad"); $("#locErr").style.display="none";};
+  $("#note").oninput=e=>{draft.note=e.target.value;};
+  document.querySelectorAll("[data-dt]").forEach(b=>b.onclick=()=>{draft.type=b.dataset.dt; document.querySelectorAll("[data-dt]").forEach(x=>x.classList.toggle("on",x===b)); $("#dn").focus();});
+  $("#sendBtn").onclick=()=>{
+    if(!draft.n){ $("#dn").classList.add("bad"); $("#locErr").style.display="block"; $("#dn").focus(); return; }
+    loc={type:draft.type,n:draft.n}; renderWhere(); sent();
+  };
+  $("#backBtn").onclick=closeSheet;
+}
+
+function sent(){
+  const no = Math.floor(100+Math.random()*900);
+  const order = {no, loc:{type:loc.type,n:String(loc.n)}, items:Object.entries(cart).map(([id,q])=>({id:+id,q})), note:String(draft.note||"").slice(0,300), total:Math.round(sum()*100)/100, status:"new", ts:Date.now(), lang};
+  const live = pushOrder(order);
+  openSheet(`<div class="big">✅</div><h3 class="center">${t("sent")}</h3>
+   <p class="center small">${t("orderNo")} #${no} · ${t(loc.type)} ${loc.n} · ${eur(sum())}</p>
+   <div class="steps">
+     <div class="st done" id="st1"><div class="dot">✓</div>${t("s1")}</div>
+     <div class="st now" id="st2"><div class="dot"></div>${t("s2")}</div>
+     <div class="st" id="st3"><div class="dot"></div>${t("s3")}</div>
+   </div>
+   <p class="small center" style="background:#f1e7d8;border-radius:12px;padding:10px">ℹ️ ${t("demoSent")}</p>
+   <button class="primary" id="againBtn">${t("newOrder")}</button>`);
+  cart={}; draft.note=""; renderMain(); renderBar();
+  live.then(ok=>{ if(!ok) setTimeout(()=>paintSteps("prep"),3500); });
+  $("#againBtn").onclick=closeSheet;
+}
+
+function paintSteps(st){
+  const order=["new","prep","way","done"], k=order.indexOf(st);
+  [["#st1",0],["#st2",1],["#st3",2]].forEach(([sel,i])=>{const el=$(sel); if(!el) return;
+    const done = i<k || (i===0) || st==="done";
+    const now = !done && i===k;
+    el.className="st"+(done?" done":now?" now":""); el.querySelector(".dot").textContent=done?"✓":"";});
+  if(k===0){const el=$("#st2"); if(el) el.className="st now";}
+}
+
+/* ---------- live connection (shared db) ---------- */
+let DB = null, dbReady = null, unsubOrder = null;
+const bc = (()=>{try{return new BroadcastChannel("menu-demo")}catch(e){return null}})();
+function getDB(){
+  if(!dbReady) dbReady = (window.claude && window.claude.use ? window.claude.use("db") : Promise.resolve(null)).then(d=>{DB=d;return d}).catch(()=>null);
+  return dbReady;
+}
+async function pushOrder(order){
+  const d = await getDB();
+  const id = "o"+order.ts+"-"+order.no;
+  if(bc) try{bc.postMessage({kind:"order",id,order})}catch(e){}
+  if(!d) return false;
+  try{
+    const ref = d.collection("orders").doc(id);
+    await ref.set(order);
+    if(unsubOrder) unsubOrder();
+    unsubOrder = ref.onSnapshot(s=>{ if(s.exists) paintSteps(s.data().status); }, ()=>{});
+    return true;
+  }catch(e){ return false; }
+}
+async function pushCall(){
+  const d = await getDB(); const c = {loc:{type:loc.type,n:String(loc.n)}, ts:Date.now()};
+  if(bc) try{bc.postMessage({kind:"call",id:"c"+c.ts,call:c})}catch(e){}
+  if(d) try{ await d.collection("calls").doc("c"+c.ts).set(c);}catch(e){}
+}
+
+document.addEventListener("click",e=>{
+  const l=e.target.closest("[data-l]"); if(l){lang=l.dataset.l; try{localStorage.setItem("menu-lang",lang)}catch(_){} render(); return}
+  const c=e.target.closest("nav [data-c]"); if(c){document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b===c)); document.getElementById("s-"+c.dataset.c).scrollIntoView({behavior:"smooth"}); return}
+  const a=e.target.closest("[data-a]"); if(a){const k=a.dataset.a; excl.has(k)?excl.delete(k):excl.add(k); renderFilters(); renderMain(); return}
+  if(e.target.closest("#ftoggle")){fOpen=!fOpen; renderFilters(); return}
+  const q=e.target.closest("[data-m]"); if(q){const id=q.dataset.m, d=+q.dataset.d; cart[id]=(cart[id]||0)+d; if(cart[id]<=0) delete cart[id]; renderMain(); renderBar(); if($("#sheet").classList.contains("open")){ if(count()) cartSheet(); else closeSheet(); } return}
+  if(e.target.closest("#chg")){locSheet(); return}
+  if(e.target.closest("#cartBtn")){cartSheet(); return}
+  if(e.target.closest("#callBtn")){ if(!loc){toast(t("needLoc")); locSheet(()=>{pushCall();toast(t("callSent"))}); return} pushCall(); toast(t("callSent")); return}
+  if(e.target.closest("#shade")){closeSheet(); return}
+});
+
+// highlight nav on scroll
+const obs = new IntersectionObserver(es=>{es.forEach(en=>{if(en.isIntersecting){const id=en.target.id.slice(2); document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.c===id))}})},{rootMargin:"-40% 0px -55% 0px"});
+function observe(){document.querySelectorAll("main section").forEach(s=>obs.observe(s))}
+
+/* ---------- KITCHEN / RECEPTION TABLET ---------- */
+const KUI = {
+  title:{it:"Ordini in arrivo",es:"Pedidos entrantes",en:"Incoming orders"},
+  new:{it:"Nuovi",es:"Nuevos",en:"New"},
+  prep:{it:"In preparazione",es:"En preparación",en:"Preparing"},
+  way:{it:"In consegna",es:"En camino",en:"On the way"},
+  toPrep:{it:"Accetta → Prepara",es:"Aceptar → Preparar",en:"Accept → Prepare"},
+  toWay:{it:"Pronto → Consegna",es:"Listo → Entregar",en:"Ready → Deliver"},
+  toDone:{it:"✓ Consegnato",es:"✓ Entregado",en:"✓ Delivered"},
+  calls:{it:"chiama il cameriere",es:"llama al camarero",en:"is calling a waiter"},
+  ok:{it:"Fatto",es:"Hecho",en:"Done"},
+  sound:{it:"🔔 Attiva suono",es:"🔔 Activar sonido",en:"🔔 Enable sound"},
+  soundOn:{it:"🔔 Suono attivo",es:"🔔 Sonido activo",en:"🔔 Sound on"},
+  sim:{it:"+ Simula ordine",es:"+ Simular pedido",en:"+ Simulate order"},
+  clear:{it:"Svuota demo",es:"Vaciar demo",en:"Clear demo"},
+  today:{it:"Consegnati",es:"Entregados",en:"Delivered"},
+  revenue:{it:"Incasso",es:"Ingresos",en:"Revenue"},
+  empty:{it:"Nessun ordine",es:"Sin pedidos",en:"No orders"},
+  min:{it:"min fa",es:"min",en:"min ago"},
+  now:{it:"adesso",es:"ahora",en:"just now"},
+  live:{it:"Collegato in tempo reale",es:"Conectado en tiempo real",en:"Live connection"},
+  offline:{it:"Modalità demo locale",es:"Modo demo local",en:"Local demo mode"},
+  note:{it:"Nota",es:"Nota",en:"Note"},
+  guestLang:{it:"Lingua ospite",es:"Idioma cliente",en:"Guest language"},
+  table:{it:"Tavolo",es:"Mesa",en:"Table"},
+  room:{it:"Camera",es:"Habitación",en:"Room"}
+};
+function kitchen(){
+  let kl = (()=>{try{return localStorage.getItem("k-lang")}catch(e){return null}})() || "it";
+  const orders = new Map(), calls = new Map(); let audio=null, isLive=false;
+  const kt = k=>KUI[k][kl];
+  document.body.innerHTML = `<style>
+   html,body{padding:0;background:#eef1f2}
+   .kh{background:var(--ink);color:#fff;display:flex;align-items:center;gap:14px;padding:14px 20px;padding-top:calc(14px + env(safe-area-inset-top));flex-wrap:wrap}
+   .kh h1{font-family:Fraunces,serif;font-weight:500;font-size:24px;margin:0;color:#fff}
+   .kh .sp{flex:1}
+   .pill{border:0;border-radius:999px;padding:8px 14px;font-weight:600;font-size:13px;background:rgba(255,255,255,.12);color:#fff}
+   .pill.on{background:#fff;color:var(--ink)}
+   .status{font-size:12px;opacity:.8;display:flex;align-items:center;gap:6px}
+   .status i{width:8px;height:8px;border-radius:50%;background:#7bd389;display:inline-block}
+   .status.off i{background:#f0b44c}
+   .stats{display:flex;gap:10px;padding:14px 20px 0}
+   .stat{background:#fff;border-radius:14px;padding:10px 16px;font-size:13px;color:var(--muted)} .stat b{display:block;font-size:20px;color:var(--ink)}
+   .callsbar{padding:0 20px}
+   .call{margin-top:12px;background:#fdebd3;border:2px solid #f0b44c;border-radius:14px;padding:12px 16px;display:flex;align-items:center;gap:12px;font-weight:600;animation:pulse 1.5s infinite}
+   .call button{margin-left:auto;border:0;background:var(--ink);color:#fff;border-radius:10px;padding:8px 14px;font-weight:600}
+   .cols{display:grid;grid-template-columns:repeat(3,minmax(260px,1fr));gap:14px;padding:16px 20px 30px;overflow-x:auto}
+   .col h2{font-family:Inter,sans-serif;font-size:14px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 10px;display:flex;gap:8px;align-items:center}
+   .col h2 span{background:var(--ink);color:#fff;border-radius:999px;font-size:12px;padding:1px 9px}
+   .oc{background:#fff;border-radius:16px;padding:14px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.06);border-top:5px solid var(--coral)}
+   .oc.prep{border-top-color:#f0b44c} .oc.way{border-top-color:var(--leaf)}
+   .oc.fresh{animation:pop .6s ease}
+   @keyframes pop{0%{transform:scale(.96);box-shadow:0 0 0 6px rgba(226,114,91,.35)}100%{transform:none}}
+   .oh{display:flex;justify-content:space-between;align-items:baseline}
+   .where2{font-size:22px;font-weight:700}
+   .ago{font-size:12px;color:var(--muted)}
+   .ono{font-size:12px;color:var(--muted);margin-bottom:8px}
+   .oi{display:flex;gap:8px;padding:5px 0;border-bottom:1px dashed var(--line);font-size:15px} .oi b{min-width:26px}
+   .onote{background:#fff6e5;border-radius:8px;padding:8px;margin-top:8px;font-size:13px}
+   .ofoot{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-weight:600}
+   .adv{width:100%;margin-top:10px;border:0;border-radius:12px;height:46px;font-weight:600;font-size:15px;background:var(--ocean);color:#fff}
+   .oc.way .adv{background:var(--leaf)}
+   .emptyc{color:var(--muted);font-size:13px;text-align:center;padding:30px 0;border:2px dashed #d5dcdf;border-radius:16px}
+   .ft{font-size:11px;color:var(--muted);text-align:center;padding-bottom:20px}
+  </style>
+  <div class="kh"><h1>🍽 ${""}<span id="kt"></span></h1><div class="status off" id="kst"><i></i><span></span></div><div class="sp"></div>
+   <div class="langs" id="klang"></div>
+   <button class="pill" id="ksound"></button><button class="pill" id="ksim"></button><button class="pill" id="kclr"></button></div>
+  <div class="stats" id="kstats"></div>
+  <div class="callsbar" id="kcalls"></div>
+  <div class="cols" id="kcols"></div>
+  <div class="ft">Sunset Terrace · DEMO</div>`;
+
+  const nameOf = id => (M[id]||{n:{}}).n[kl] || (M[id]||{n:{}}).n.en || "?";
+  const locTxt = l => l ? `${l.type==="room"?"🛏 "+kt("room"):"🍽 "+kt("table")} ${String(l.n).slice(0,8)}` : "?";
+  const ago = ts => { const m=Math.floor((Date.now()-ts)/60000); return m<1?kt("now"):`${m} ${kt("min")}`; };
+  let delivered = {n:0,sum:0};
+
+  function paint(){
+    lang = kl;
+    $("#kt").textContent = kt("title");
+    const s=$("#kst"); s.className="status"+(isLive?"":" off"); s.querySelector("span").textContent = isLive?kt("live"):kt("offline");
+    $("#klang").innerHTML = ["it","es","en"].map(l=>`<button class="${l===kl?"on":""}" data-kl="${l}">${l.toUpperCase()}</button>`).join("");
+    $("#ksound").textContent = audio?kt("soundOn"):kt("sound"); $("#ksound").className="pill"+(audio?" on":"");
+    $("#ksim").textContent = kt("sim"); $("#kclr").textContent = kt("clear");
+    const all=[...orders.values()];
+    const dn = all.filter(o=>o.status==="done");
+    const dsum = dn.reduce((a,o)=>a+(+o.total||0),0) + delivered.sum;
+    $("#kstats").innerHTML = `<div class="stat">${kt("today")}<b>${dn.length+delivered.n}</b></div><div class="stat">${kt("revenue")}<b>${eur(dsum)}</b></div>`;
+    $("#kcalls").innerHTML = [...calls.entries()].sort((a,b)=>a[1].ts-b[1].ts).map(([id,c])=>`<div class="call">🛎 ${locTxt(c.loc)} ${kt("calls")} · <span class="ago">${ago(c.ts)}</span><button data-cd="${id}">${kt("ok")}</button></div>`).join("");
+    $("#kcols").innerHTML = ["new","prep","way"].map(st=>{
+      const list = all.filter(o=>o.status===st).sort((a,b)=>a.ts-b.ts);
+      return `<div class="col"><h2>${kt(st)} <span>${list.length}</span></h2>${list.length?list.map(o=>card(o)).join(""):`<div class="emptyc">${kt("empty")}</div>`}</div>`;
+    }).join("");
+  }
+  function card(o){
+    const items=(o.items||[]).map(it=>`<div class="oi"><b>${+it.q||0}×</b>${nameOf(it.id)}</div>`).join("");
+    const btn = o.status==="new"?kt("toPrep"):o.status==="prep"?kt("toWay"):kt("toDone");
+    const note = o.note?`<div class="onote">📝 <b>${kt("note")}:</b> ${String(o.note).replace(/[<>&]/g,"")}</div>`:"";
+    return `<div class="oc ${o.status} ${o._fresh?"fresh":""}"><div class="oh"><div class="where2">${locTxt(o.loc)}</div><div class="ago">${ago(o.ts)}</div></div>
+      <div class="ono">#${+o.no||""} · ${kt("guestLang")}: ${(LN[o.lang]||"?")}</div>${items}${note}
+      <div class="ofoot"><span></span><span>${eur(+o.total||0)}</span></div>
+      <button class="adv" data-adv="${o._id}">${btn}</button></div>`;
+  }
+  function beep(){ if(!audio) return; try{ const now=audio.currentTime; [0,0.18].forEach((d,i)=>{const o=audio.createOscillator(),g=audio.createGain(); o.frequency.value=i?1046:784; o.connect(g); g.connect(audio.destination); g.gain.setValueAtTime(.0001,now+d); g.gain.exponentialRampToValueAtTime(.3,now+d+.02); g.gain.exponentialRampToValueAtTime(.0001,now+d+.35); o.start(now+d); o.stop(now+d+.4);}); }catch(e){} }
+
+  function upsert(id,o,isNew){ const prev=orders.get(id); o._id=id; o._fresh = !prev && isNew; orders.set(id,o); if(!prev && isNew && o.status==="new") beep(); }
+
+  async function setStatus(id, st){
+    const o=orders.get(id); if(!o) return;
+    o.status=st; o._fresh=false; paint();
+    if(DB && isLive){ try{ await DB.collection("orders").doc(id).update({status:st}); }catch(e){} }
+    if(bc) try{bc.postMessage({kind:"status",id,status:st})}catch(e){}
+  }
+
+  function simulate(){
+    const picks=[...M].sort(()=>Math.random()-.5).slice(0,1+Math.floor(Math.random()*3));
+    const items=picks.map(m=>({id:m.id,q:1+Math.floor(Math.random()*2)}));
+    const total=Math.round(items.reduce((a,it)=>a+M[it.id].p*it.q,0)*100)/100;
+    const isRoom=Math.random()<.4;
+    const o={no:Math.floor(100+Math.random()*900),loc:{type:isRoom?"room":"table",n:String(isRoom?100+Math.floor(Math.random()*500):1+Math.floor(Math.random()*30))},items,note:Math.random()<.4?["Sin cebolla","No ice please","Ohne Zwiebeln","Ben cotto"][Math.floor(Math.random()*4)]:"",total,status:"new",ts:Date.now(),lang:["en","de","es","it"][Math.floor(Math.random()*4)]};
+    const id="o"+o.ts+"-"+o.no;
+    if(DB && isLive){ DB.collection("orders").doc(id).set(o).catch(()=>{upsert(id,o,true);paint();}); }
+    else { upsert(id,o,true); paint(); }
+  }
+
+  document.addEventListener("click",async e=>{
+    const l=e.target.closest("[data-kl]"); if(l){kl=l.dataset.kl; try{localStorage.setItem("k-lang",kl)}catch(_){} paint(); return}
+    if(e.target.closest("#ksound")){ try{ audio = audio || new (window.AudioContext||window.webkitAudioContext)(); await audio.resume(); beep(); }catch(_){ audio=null } paint(); return}
+    if(e.target.closest("#ksim")){ simulate(); return}
+    if(e.target.closest("#kclr")){
+      const ids=[...orders.keys()], cids=[...calls.keys()]; orders.clear(); calls.clear(); delivered={n:0,sum:0}; paint();
+      if(DB && isLive){ for(const id of ids){ try{await DB.collection("orders").doc(id).delete()}catch(_){} } for(const id of cids){ try{await DB.collection("calls").doc(id).delete()}catch(_){} } }
+      return}
+    const a=e.target.closest("[data-adv]"); if(a){ const o=orders.get(a.dataset.adv); if(!o) return; setStatus(o._id, o.status==="new"?"prep":o.status==="prep"?"way":"done"); return}
+    const c=e.target.closest("[data-cd]"); if(c){ const id=c.dataset.cd; calls.delete(id); paint(); if(DB && isLive){ try{await DB.collection("calls").doc(id).delete()}catch(_){} } return}
+  });
+
+  // same-browser fallback (two tabs)
+  if(bc) bc.onmessage = ev=>{ const m=ev.data||{}; if(isLive) return;
+    if(m.kind==="order"){ upsert(m.id,{...m.order},true); paint(); }
+    if(m.kind==="call"){ calls.set(m.id,m.call); beep(); paint(); } };
+
+  paint();
+  setInterval(paint, 30000);
+
+  getDB().then(d=>{
+    if(!d) return;
+    let first=true;
+    const timer=setTimeout(()=>{},10000);
+    d.collection("orders").orderBy("ts","desc").limit(100).onSnapshot(snap=>{
+      clearTimeout(timer); isLive=true;
+      const seen=new Set();
+      snap.docs.forEach(doc=>{ const o={...doc.data()}; seen.add(doc.id); upsert(doc.id,o,!first); });
+      [...orders.keys()].forEach(k=>{ if(!seen.has(k)) orders.delete(k); });
+      first=false; paint();
+    }, ()=>{ isLive=false; paint(); });
+    let firstC=true;
+    d.collection("calls").orderBy("ts","desc").limit(30).onSnapshot(snap=>{
+      const before=calls.size; calls.clear(); snap.docs.forEach(doc=>calls.set(doc.id,{...doc.data()}));
+      if(!firstC && calls.size>before) beep(); firstC=false; paint();
+    }, ()=>{});
+  });
+}
+
+if(ORDERING && location.hash==="#cucina"){
+  kitchen();
+} else {
+loc = parseHash();
+window.addEventListener("hashchange",()=>{const p=parseHash(); if(p){loc=p; renderWhere();}});
+render(); observe();
+if(ORDERING) getDB();
+}
+const _rm = renderMain; renderMain = function(){_rm(); observe();};
+</script>
+</body>
+</html>

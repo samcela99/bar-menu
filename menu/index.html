@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Menù con ordinazione – Demo</title>
+<title>Menù – Pool Bar Carmensita</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 300 300%27%3E%3Crect width=%27300%27 height=%27300%27 rx=%2766%27 fill=%27%230E5E6B%27/%3E%3Ctext x=%27150%27 y=%27215%27 text-anchor=%27middle%27 font-family=%27Georgia,serif%27 font-style=%27italic%27 font-size=%27210%27 fill=%27%23F7F1E8%27%3EC%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -112,8 +113,8 @@ textarea,input[type=text]{width:100%;border:1px solid var(--line);border-radius:
 <header>
   <div class="top">
     <div class="logo">
-      <div class="mark">LOGO</div>
-      <div><div class="hname">Pool Bar Carmensita</div><div class="hsub">Apart Hotel Ponderosa · Costa Adeje</div></div>
+      <svg style="flex: none" viewBox="0 0 500 500" width="52" height="52" role="img" aria-label="Pool Bar Carmensita, Costa Adeje"><defs><path id="topm" d="M 90 250 A 160 160 0 0 1 410 250"></path><path id="botm" d="M 70 250 A 180 180 0 0 0 430 250"></path></defs><circle cx="250" cy="250" r="236" fill="#0E5E6B"></circle><circle cx="250" cy="250" r="222" fill="none" stroke="#F7F1E8" stroke-width="3"></circle><circle cx="250" cy="250" r="140" fill="#F7F1E8"></circle><text font-family="Montserrat, sans-serif" font-weight="700" font-size="30" letter-spacing="9" fill="#F7F1E8"><textPath href="#topm" startOffset="50%" text-anchor="middle">POOL BAR</textPath></text><text font-family="Montserrat, sans-serif" font-weight="700" font-size="22" letter-spacing="7" fill="#F2B544"><textPath href="#botm" startOffset="50%" text-anchor="middle">COSTA ADEJE · TENERIFE</textPath></text><circle cx="72" cy="250" r="6" fill="#F2B544"></circle><circle cx="428" cy="250" r="6" fill="#F2B544"></circle><g transform="translate(190 140)"><circle cx="72" cy="46" r="24" fill="#F2B544"></circle><path d="M58 106 C 61 86, 59 68, 52 50" stroke="#0E5E6B" stroke-width="6" fill="none" stroke-linecap="round"></path><path d="M52 50 C 40 36, 24 34, 10 42 C 26 40, 38 44, 52 50Z" fill="#0E5E6B"></path><path d="M52 50 C 46 32, 34 22, 18 22 C 34 28, 44 38, 52 50Z" fill="#0E5E6B"></path><path d="M52 50 C 58 30, 72 20, 88 24 C 72 30, 62 38, 52 50Z" fill="#0E5E6B"></path><path d="M52 50 C 66 40, 82 40, 96 50 C 80 46, 66 46, 52 50Z" fill="#0E5E6B"></path><path d="M52 50 C 40 50, 30 58, 24 72 C 34 60, 42 54, 52 50Z" fill="#0E5E6B"></path></g><text x="250" y="298" text-anchor="middle" font-family="Pacifico, cursive" font-size="48" fill="#E2725B">Carmensita</text><path d="M188 334 q 12 -8 25 0 t 25 0 t 25 0 t 25 0 t 25 0" stroke="#E2725B" stroke-width="5" fill="none" stroke-linecap="round"></path></svg>
+      <div><div class="hname">Carmensita</div><div class="hsub">Apart Hotel Ponderosa · Costa Adeje</div></div>
     </div>
     <div class="langs" id="langs"></div>
   </div>
@@ -138,7 +139,8 @@ textarea,input[type=text]{width:100%;border:1px solid var(--line);border-radius:
 <div class="toast" id="toast"></div>
 
 <script>
-const ORDERING = true;
+const ORDERING = false;
+const SHOW_ALLERGENS = false; // attivare dopo la conferma del bar
 
 const L = ["en","es","de","it"];
 const LN = {en:"EN",es:"ES",de:"DE",it:"IT"};
@@ -147,7 +149,7 @@ const UI = {
   demo:{en:"DEMO — allergens to be confirmed.",es:"DEMO — alérgenos por confirmar.",de:"DEMO — Allergene noch zu bestätigen.",it:"DEMO — allergeni da confermare."},
   demoO:{en:"DEMO — allergens to be confirmed.",es:"DEMO — alérgenos por confirmar.",de:"DEMO — Allergene noch zu bestätigen.",it:"DEMO — allergeni da confermare."},
   h1:{en:"Our menu",es:"Nuestra carta",de:"Unsere Speisekarte",it:"Il nostro menù"},
-  lead:{en:"Cocktails and Italian cooking on the terrace.",es:"Cócteles y cocina italiana en la terraza.",de:"Cocktails und italienische Küche auf der Terrasse.",it:"Cocktail e cucina italiana in terrazza."},
+  lead:{en:"Cocktails and Italian cooking by the pool.",es:"Cócteles y cocina italiana junto a la piscina.",de:"Cocktails und italienische Küche am Pool.",it:"Cocktail e cucina italiana a bordo piscina."},
   leadO:{en:"Choose your dishes and order straight from your phone.",es:"Elige tus platos y pide desde el móvil.",de:"Gerichte wählen und direkt per Handy bestellen.",it:"Scegli i piatti e ordina direttamente dal telefono."},
   table:{en:"Table",es:"Mesa",de:"Tisch",it:"Tavolo"},
   room:{en:"Room",es:"Habitación",de:"Zimmer",it:"Camera"},
@@ -157,6 +159,7 @@ const UI = {
   filtClose:{en:"Hide allergen filter",es:"Cerrar filtro de alérgenos",de:"Allergenfilter schließen",it:"Chiudi filtro allergeni"},
   hiddenN:{en:"dishes hidden",es:"platos ocultos",de:"Gerichte ausgeblendet",it:"piatti nascosti"},
   legend:{en:"Allergens (EU Reg. 1169/2011)",es:"Alérgenos (Reg. UE 1169/2011)",de:"Allergene (EU-VO 1169/2011)",it:"Allergeni (Reg. UE 1169/2011)"},
+  askAl:{en:"Allergies or intolerances?",es:"¿Alergias o intolerancias?",de:"Allergien oder Unverträglichkeiten?",it:"Allergie o intolleranze?"},
   legendNote:{en:"Please tell our staff about any allergy or intolerance.",es:"Informe al personal de cualquier alergia o intolerancia.",de:"Bitte informieren Sie unser Personal über Allergien oder Unverträglichkeiten.",it:"Comunica al personale eventuali allergie o intolleranze."},
   pop:{en:"Popular",es:"Popular",de:"Beliebt",it:"Il più scelto"},
   veg:{en:"Vegetarian",es:"Vegetariano",de:"Vegetarisch",it:"Vegetariano"},
@@ -296,7 +299,7 @@ function parseHash(){
 
 function render(){
   document.documentElement.lang = lang;
-  $("#demoBanner").textContent = ORDERING ? t("demoO") : t("demo");
+  $("#demoBanner").style.display="none";
   $("#langs").innerHTML = L.map(l=>`<button class="${l===lang?"on":""}" data-l="${l}">${LN[l]}</button>`).join("");
   $("#h1").textContent = t("h1");
   $("#lead").textContent = ORDERING ? t("leadO") : t("lead");
@@ -317,6 +320,7 @@ function renderWhere(){
 }
 
 function renderFilters(){
+  if(!SHOW_ALLERGENS){ $(".filters").style.display="none"; return; }
   $("#ftoggle").textContent = (fOpen?"▾ ":"▸ ") + (fOpen?t("filtClose"):t("filt"));
   const hidden = M.filter(m=>m.a.some(a=>excl.has(a))).length;
   $("#fwrap").className = "fwrap"+(fOpen?" open":"");
@@ -326,7 +330,7 @@ function renderFilters(){
 
 function itemHTML(m){
   const tags = m.t.map(x=>`<span class="tag ${x==="pop"?"pop":"veg"}">${x==="pop"?"★ ":"🌱 "}${t(x)}</span>`).join("");
-  const als = m.a.map(a=>`<span class="al" title="${AL[a][lang]}">${AL[a].e}</span>`).join("");
+  const als = !SHOW_ALLERGENS ? "" : m.a.map(a=>`<span class="al" title="${AL[a][lang]}">${AL[a].e}</span>`).join("");
   const q = cart[m.id]||0;
   const ctrl = ORDERING ? `<div class="qty">${q?`<button class="qb minus" data-m="${m.id}" data-d="-1" aria-label="-">−</button><span class="qn">${q}</span>`:""}<button class="qb" data-m="${m.id}" data-d="1" aria-label="+">+</button></div>` : "";
   const hide = m.a.some(a=>excl.has(a));
@@ -338,7 +342,7 @@ function itemHTML(m){
 
 function renderMain(){
   $("#main").innerHTML = CATS.map(c=>`<section id="s-${c.id}"><h2>${c.e} ${c.n[lang]}</h2><div class="hours">🕐 ${c.h[lang]}</div>${M.filter(m=>m.c===c.id).map(itemHTML).join("")}</section>`).join("")
-   + `<div class="legend"><h3>${t("legend")}</h3><div class="lg">${Object.values(AL).map(v=>`<span>${v.e} ${v[lang]}</span>`).join("")}</div><p class="small" style="margin:10px 0 0">${t("legendNote")}</p></div>`
+   + (SHOW_ALLERGENS ? `<div class="legend"><h3>${t("legend")}</h3><div class="lg">${Object.values(AL).map(v=>`<span>${v.e} ${v[lang]}</span>`).join("")}</div><p class="small" style="margin:10px 0 0">${t("legendNote")}</p></div>` : `<div class="legend"><h3>${t("askAl")}</h3><p class="small" style="margin:0">${t("legendNote")}</p></div>`)
    + `<footer>${t("footer")}</footer>`;
 }
 

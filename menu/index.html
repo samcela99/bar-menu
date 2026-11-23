@@ -46,7 +46,6 @@ main{padding:4px 16px}
 section{padding-top:18px;scroll-margin-top:60px}
 h2{font-family:Fraunces,serif;font-weight:500;font-size:22px;margin:4px 0 2px}
 .hours{font-size:12px;color:var(--muted);margin-bottom:10px}
-[data-ty="room"],[data-dt="room"]{display:none!important}
 .item{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:10px;display:flex;gap:12px}
 .item.hidden{display:none}
 .ic{width:56px;height:56px;flex:none;border-radius:14px;display:grid;place-items:center;font-size:28px;background:#f1e7d8}
@@ -153,7 +152,7 @@ const UI = {
   table:{en:"Table",es:"Mesa",de:"Tisch",it:"Tavolo"},
   room:{en:"Room",es:"Habitación",de:"Zimmer",it:"Camera"},
   change:{en:"Change",es:"Cambiar",de:"Ändern",it:"Cambia"},
-  setLoc:{en:"Set your table",es:"Indica tu mesa",de:"Tisch angeben",it:"Indica il tavolo"},
+  setLoc:{en:"Set table / room",es:"Indica mesa / habitación",de:"Tisch / Zimmer angeben",it:"Indica tavolo / camera"},
   filt:{en:"Allergies? Hide dishes containing…",es:"¿Alergias? Ocultar platos con…",de:"Allergien? Gerichte ausblenden mit…",it:"Allergie? Nascondi i piatti con…"},
   filtClose:{en:"Hide allergen filter",es:"Cerrar filtro de alérgenos",de:"Allergenfilter schließen",it:"Chiudi filtro allergeni"},
   hiddenN:{en:"dishes hidden",es:"platos ocultos",de:"Gerichte ausgeblendet",it:"piatti nascosti"},
@@ -171,7 +170,7 @@ const UI = {
   total:{en:"Total",es:"Total",de:"Gesamt",it:"Totale"},
   send:{en:"Send order",es:"Enviar pedido",de:"Bestellung senden",it:"Invia ordine"},
   back:{en:"Keep browsing",es:"Seguir mirando",de:"Weiter ansehen",it:"Continua a guardare"},
-  charge:{en:"Pay at the table or at the bar.",es:"Se paga en la mesa o en la barra.",de:"Bezahlung am Tisch oder an der Bar.",it:"Si paga al tavolo o al bancone."},
+  charge:{en:"Pay at the table, at the bar or on delivery to your room.",es:"Se paga en la mesa, en la barra o al entregar en la habitación.",de:"Bezahlung am Tisch, an der Bar oder bei Lieferung aufs Zimmer.",it:"Si paga al tavolo, al bancone o alla consegna in camera."},
   sent:{en:"Order sent!",es:"¡Pedido enviado!",de:"Bestellung gesendet!",it:"Ordine inviato!"},
   orderNo:{en:"Order",es:"Pedido",de:"Bestellung",it:"Ordine"},
   s1:{en:"Received",es:"Recibido",de:"Eingegangen",it:"Ricevuto"},
@@ -180,10 +179,10 @@ const UI = {
   newOrder:{en:"Order something else",es:"Pedir algo más",de:"Noch etwas bestellen",it:"Ordina altro"},
   demoSent:{en:"In the live version this order appears instantly on the kitchen / reception tablet.",es:"En la versión real el pedido aparece al instante en la tablet de cocina / recepción.",de:"In der Live-Version erscheint die Bestellung sofort auf dem Küchen-/Rezeptions-Tablet.",it:"Nella versione reale l'ordine arriva subito sul tablet della cucina / reception."},
   callSent:{en:"A waiter is on the way 🛎",es:"Un camarero va hacia ti 🛎",de:"Ein Kellner ist unterwegs 🛎",it:"Un cameriere sta arrivando 🛎"},
-  where:{en:"Your table",es:"Tu mesa",de:"Ihr Tisch",it:"Il tuo tavolo"},
+  where:{en:"Where are you?",es:"¿Dónde estás?",de:"Wo sind Sie?",it:"Dove sei?"},
   number:{en:"Number",es:"Número",de:"Nummer",it:"Numero"},
   confirm:{en:"Confirm",es:"Confirmar",de:"Bestätigen",it:"Conferma"},
-  needLoc:{en:"Please enter your table number",es:"Indica el número de mesa",de:"Bitte Tischnummer angeben",it:"Indica il numero del tavolo"},
+  needLoc:{en:"Please enter your table or room number",es:"Indica tu número de mesa o habitación",de:"Bitte Tisch- oder Zimmernummer angeben",it:"Indica il numero del tavolo o della camera"},
   remove:{en:"Remove",es:"Quitar",de:"Entfernen",it:"Rimuovi"},
   footer:{en:"Prices in € incl. IGIC",es:"Precios en € con IGIC incluido",de:"Preise in € inkl. IGIC",it:"Prezzi in € IGIC inclusa"}
 };

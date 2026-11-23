@@ -137,6 +137,8 @@ footer b{font-family:Fraunces,serif;color:#fff;font-size:22px;font-weight:600}
   <div class="where">
     <h3 id="wT"></h3><p id="wP"></p>
     <div class="cbtns">
+      <a class="btn wa" href="https://wa.me/34603399528" id="bWa"></a>
+      <a class="btn light" href="tel:+34603399528">📞 +34 603 39 95 28</a>
                   <a class="btn dark" href="https://www.google.com/maps/search/?api=1&query=Apart+Hotel+Ponderosa+Costa+Adeje" id="bMap"></a>
     </div>
   </div>
@@ -187,15 +189,15 @@ const T={
  t3:{en:"The mood",es:"El ambiente",de:"Die Stimmung",it:"L'atmosfera"},
  photo:{en:"Photo here",es:"Foto aquí",de:"Foto hier",it:"Foto qui"},
  e4:{en:"Hours",es:"Horario",de:"Öffnungszeiten",it:"Orari"},
- t4:{en:"Open every day",es:"Abierto todos los días",de:"Täglich geöffnet",it:"Aperto tutti i giorni"},
+ t4:{en:"Monday to Saturday",es:"De lunes a sábado",de:"Montag bis Samstag",it:"Dal lunedì al sabato"},
  l4:{en:"Open to everyone, not only hotel guests. In the garden of Apart Hotel Ponderosa, next to the pool.",es:"Abierto a todos, no solo a los huéspedes. En el jardín del Apart Hotel Ponderosa, junto a la piscina.",de:"Für alle geöffnet, nicht nur für Hotelgäste. Im Garten des Apart Hotel Ponderosa, am Pool.",it:"Aperto a tutti, non solo agli ospiti dell'hotel. Nel giardino dell'Apart Hotel Ponderosa, accanto alla piscina."},
- hours:{en:[["Bar & kitchen","10:00 – 22:00"],["Pool access","Free with lunch or dinner"],["Pool events","Ask at the bar"]],es:[["Bar y cocina","10:00 – 22:00"],["Piscina","Gratis con comida o cena"],["Eventos en la piscina","Pregunta en la barra"]],de:[["Bar & Küche","10:00 – 22:00"],["Pool","Gratis mit Mittag- oder Abendessen"],["Pool-Events","Fragen Sie an der Bar"]],it:[["Bar e cucina","10:00 – 22:00"],["Piscina","Gratis con pranzo o cena"],["Eventi in piscina","Chiedi al bancone"]]},
+ hours:{en:[["Mon – Sat","10:00 – 22:00"],["Sunday","Closed"],["Pool access","Free with lunch or dinner"],["Pool events","Ask at the bar"]],es:[["Lun – Sáb","10:00 – 22:00"],["Domingo","Cerrado"],["Piscina","Gratis con comida o cena"],["Eventos en la piscina","Pregunta en la barra"]],de:[["Mo – Sa","10:00 – 22:00"],["Sonntag","Geschlossen"],["Pool","Gratis mit Mittag- oder Abendessen"],["Pool-Events","Fragen Sie an der Bar"]],it:[["Lun – Sab","10:00 – 22:00"],["Domenica","Chiuso"],["Piscina","Gratis con pranzo o cena"],["Eventi in piscina","Chiedi al bancone"]]},
  wT:{en:"Where we are",es:"Dónde estamos",de:"Wo wir sind",it:"Dove siamo"},
  wP:{en:"Inside Apart Hotel Ponderosa, Avenida Venezuela 16, Costa Adeje. By the pool, a short walk from the beach.",es:"Dentro del Apart Hotel Ponderosa, Avenida Venezuela 16, Costa Adeje. Junto a la piscina, a pocos pasos de la playa.",de:"Im Apart Hotel Ponderosa, Avenida Venezuela 16, Costa Adeje. Am Pool, nur wenige Schritte vom Strand.",it:"Dentro l'Apart Hotel Ponderosa, Avenida Venezuela 16, Costa Adeje. A bordo piscina, a pochi passi dal mare."},
  wa:{en:"💬 WhatsApp / reservations",es:"💬 WhatsApp / reservas",de:"💬 WhatsApp / Reservierung",it:"💬 WhatsApp / prenota un tavolo"},
  ig:{en:"📸 Follow us on Instagram",es:"📸 Síguenos en Instagram",de:"📸 Folgen Sie uns auf Instagram",it:"📸 Seguici su Instagram"},
  map:{en:"📍 Directions",es:"📍 Cómo llegar",de:"📍 Route",it:"📍 Come arrivare"},
- fTxt:{en:"Open every day 10:00 – 22:00",es:"Abierto todos los días 10:00 – 22:00",de:"Täglich 10:00 – 22:00",it:"Aperto tutti i giorni 10:00 – 22:00"},
+ fTxt:{en:"Mon – Sat 10:00 – 22:00 · Sunday closed",es:"Lun – Sáb 10:00 – 22:00 · Domingo cerrado",de:"Mo – Sa 10:00 – 22:00 · Sonntag geschlossen",it:"Lun – Sab 10:00 – 22:00 · Domenica chiuso"},
  tWa:{en:"Demo: opens a WhatsApp chat with the bar.",es:"Demo: abre un chat de WhatsApp con el bar.",de:"Demo: Öffnet einen WhatsApp-Chat mit der Bar.",it:"Demo: apre una chat WhatsApp con il bar."},
  tIg:{en:"Demo: opens the bar's Instagram profile.",es:"Demo: abre el perfil de Instagram del bar.",de:"Demo: Öffnet das Instagram-Profil der Bar.",it:"Demo: apre il profilo Instagram del bar."}
 };
@@ -209,7 +211,10 @@ const eur=v=>v.toLocaleString(lang==="en"?"en-GB":lang,{style:"currency",currenc
 
 function render(){
   document.documentElement.lang=lang;
-  ["sub","openNow","kicker","h1","hsub","e1","t1","l1","e2","t2","l2","mFull","mNote","hhT","hhP","e3","t3","e4","t4","l4","wT","wP","fTxt"].forEach(k=>set(k,tx(k)));
+  T.closedNow={en:"Closed today · open Monday 10:00",es:"Hoy cerrado · abrimos el lunes a las 10:00",de:"Heute geschlossen · Montag ab 10:00",it:"Oggi chiuso · riapre lunedì alle 10:00"};
+  set("bWa",tx("wa"));
+  set("openNow", new Date().getDay()===0 ? tx("closedNow") : tx("openNow"));
+  ["sub","kicker","h1","hsub","e1","t1","l1","e2","t2","l2","mFull","mNote","hhT","hhP","e3","t3","e4","t4","l4","wT","wP","fTxt"].forEach(k=>set(k,tx(k)));
   set("hMenu",tx("orderMenu"));set("hb1",tx("seeMenu"));set("hb2",tx("findUs"));set("stBtn",tx("orderMenu"));
   set("bMap",tx("map"));
   $("#nav").innerHTML=tx("nav").map((n,i)=>`<a href="#${IDS[i]}">${n}</a>`).join("");

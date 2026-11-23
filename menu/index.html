@@ -17,18 +17,21 @@ html,body{margin:0;background:var(--sand);color:var(--ink);font-family:Inter,sys
 body{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
 button{font:inherit;color:inherit;cursor:pointer}
 .demo{background:var(--ink);color:#fff;font-size:12px;text-align:center;padding:6px 12px;padding-top:calc(6px + env(safe-area-inset-top));letter-spacing:.02em}
-header{background:linear-gradient(160deg,var(--ocean) 0%,var(--ocean-2) 100%);color:#fff;padding:22px 20px 26px;position:relative;overflow:hidden}
-header:after{content:"";position:absolute;right:-60px;top:-60px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.06);pointer-events:none}
+header{background:linear-gradient(180deg,rgba(5,30,38,.35) 0%,rgba(5,30,38,.82) 100%),url(../img/hero.jpg) center 45%/cover;color:#fff;padding:0 0 26px;position:relative;overflow:hidden}
+.brandbar{background:rgba(247,241,232,.95);color:var(--ink);display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 16px;padding-top:calc(10px + env(safe-area-inset-top))}
+.brandbar a{color:inherit;text-decoration:none}
+.htext{padding:56px 20px 0}
+
 .top,h1,.lead,.where{position:relative;z-index:1}
 .top{display:flex;justify-content:space-between;align-items:center;gap:12px}
 .logo{display:flex;align-items:center;gap:10px}
 .mark{width:40px;height:40px;border-radius:12px;border:1.5px dashed rgba(255,255,255,.6);display:grid;place-items:center;font-size:9px;line-height:1.1;text-align:center;opacity:.9}
-.hname{font-family:Fraunces,serif;font-size:20px;font-weight:600;line-height:1.1}
-.hsub{font-size:12px;opacity:.75;margin-top:2px}
-.langs{display:flex;background:rgba(255,255,255,.12);border-radius:999px;padding:3px}
-.langs button{border:0;background:transparent;color:#fff;font-size:12px;font-weight:600;padding:6px 9px;border-radius:999px;opacity:.75}
-.langs button.on{background:#fff;color:var(--ocean);opacity:1}
-h1{font-family:Fraunces,serif;font-weight:500;font-size:28px;margin:22px 0 4px}
+.hname{font-family:Fraunces,serif;font-size:19px;font-weight:600;line-height:1.1;white-space:nowrap}
+.hsub{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:2px;white-space:nowrap}
+.langs{display:flex;background:#fff;border:1px solid var(--line);border-radius:999px;padding:2px}
+.langs button{border:0;background:transparent;color:var(--muted);font-size:12px;font-weight:600;padding:6px 8px;border-radius:999px}
+.langs button.on{background:var(--ink);color:#fff}
+h1{font-family:Fraunces,serif;font-weight:500;font-size:34px;margin:22px 0 4px;text-shadow:0 2px 12px rgba(0,0,0,.35)}
 .lead{opacity:.8;margin:0;font-size:14px}
 .where{margin-top:14px;display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.14);border-radius:999px;padding:7px 12px;font-size:13px;font-weight:500}
 .where button{border:0;background:#fff;color:var(--ocean);border-radius:999px;padding:3px 9px;font-size:12px;font-weight:600}
@@ -111,16 +114,18 @@ textarea,input[type=text]{width:100%;border:1px solid var(--line);border-radius:
 <body>
 <div class="demo" id="demoBanner"></div>
 <header>
-  <div class="top">
-    <div class="logo">
-      <svg style="flex: none" viewBox="0 0 500 500" width="52" height="52" role="img" aria-label="Pool Bar Carmensita, Costa Adeje"><defs><path id="topm" d="M 90 250 A 160 160 0 0 1 410 250"></path><path id="botm" d="M 70 250 A 180 180 0 0 0 430 250"></path></defs><circle cx="250" cy="250" r="236" fill="#0E5E6B"></circle><circle cx="250" cy="250" r="222" fill="none" stroke="#F7F1E8" stroke-width="3"></circle><circle cx="250" cy="250" r="140" fill="#F7F1E8"></circle><text font-family="Montserrat, sans-serif" font-weight="700" font-size="30" letter-spacing="9" fill="#F7F1E8"><textPath href="#topm" startOffset="50%" text-anchor="middle">POOL BAR</textPath></text><text font-family="Montserrat, sans-serif" font-weight="700" font-size="22" letter-spacing="7" fill="#F2B544"><textPath href="#botm" startOffset="50%" text-anchor="middle">COSTA ADEJE · TENERIFE</textPath></text><circle cx="72" cy="250" r="6" fill="#F2B544"></circle><circle cx="428" cy="250" r="6" fill="#F2B544"></circle><g transform="translate(190 140)"><circle cx="72" cy="46" r="24" fill="#F2B544"></circle><path d="M58 106 C 61 86, 59 68, 52 50" stroke="#0E5E6B" stroke-width="6" fill="none" stroke-linecap="round"></path><path d="M52 50 C 40 36, 24 34, 10 42 C 26 40, 38 44, 52 50Z" fill="#0E5E6B"></path><path d="M52 50 C 46 32, 34 22, 18 22 C 34 28, 44 38, 52 50Z" fill="#0E5E6B"></path><path d="M52 50 C 58 30, 72 20, 88 24 C 72 30, 62 38, 52 50Z" fill="#0E5E6B"></path><path d="M52 50 C 66 40, 82 40, 96 50 C 80 46, 66 46, 52 50Z" fill="#0E5E6B"></path><path d="M52 50 C 40 50, 30 58, 24 72 C 34 60, 42 54, 52 50Z" fill="#0E5E6B"></path></g><text x="250" y="298" text-anchor="middle" font-family="Pacifico, cursive" font-size="48" fill="#E2725B">Carmensita</text><path d="M188 334 q 12 -8 25 0 t 25 0 t 25 0 t 25 0 t 25 0" stroke="#E2725B" stroke-width="5" fill="none" stroke-linecap="round"></path></svg>
-      <div><div class="hname">Carmensita</div><div class="hsub">Apart Hotel Ponderosa · Costa Adeje</div></div>
-    </div>
+  <div class="brandbar">
+    <a class="logo" href="../" aria-label="Pool Bar Carmensita – home" style="display:flex;align-items:center;gap:10px">
+      <svg style="flex: none" viewBox="0 0 500 500" width="44" height="44" role="img" aria-label="Pool Bar Carmensita, Costa Adeje"><defs><path id="topm" d="M 90 250 A 160 160 0 0 1 410 250"></path><path id="botm" d="M 70 250 A 180 180 0 0 0 430 250"></path></defs><circle cx="250" cy="250" r="236" fill="#0E5E6B"></circle><circle cx="250" cy="250" r="222" fill="none" stroke="#F7F1E8" stroke-width="3"></circle><circle cx="250" cy="250" r="140" fill="#F7F1E8"></circle><text font-family="Montserrat, sans-serif" font-weight="700" font-size="30" letter-spacing="9" fill="#F7F1E8"><textPath href="#topm" startOffset="50%" text-anchor="middle">POOL BAR</textPath></text><text font-family="Montserrat, sans-serif" font-weight="700" font-size="22" letter-spacing="7" fill="#F2B544"><textPath href="#botm" startOffset="50%" text-anchor="middle">COSTA ADEJE · TENERIFE</textPath></text><circle cx="72" cy="250" r="6" fill="#F2B544"></circle><circle cx="428" cy="250" r="6" fill="#F2B544"></circle><g transform="translate(190 140)"><circle cx="72" cy="46" r="24" fill="#F2B544"></circle><path d="M58 106 C 61 86, 59 68, 52 50" stroke="#0E5E6B" stroke-width="6" fill="none" stroke-linecap="round"></path><path d="M52 50 C 40 36, 24 34, 10 42 C 26 40, 38 44, 52 50Z" fill="#0E5E6B"></path><path d="M52 50 C 46 32, 34 22, 18 22 C 34 28, 44 38, 52 50Z" fill="#0E5E6B"></path><path d="M52 50 C 58 30, 72 20, 88 24 C 72 30, 62 38, 52 50Z" fill="#0E5E6B"></path><path d="M52 50 C 66 40, 82 40, 96 50 C 80 46, 66 46, 52 50Z" fill="#0E5E6B"></path><path d="M52 50 C 40 50, 30 58, 24 72 C 34 60, 42 54, 52 50Z" fill="#0E5E6B"></path></g><text x="250" y="298" text-anchor="middle" font-family="Pacifico, cursive" font-size="48" fill="#E2725B">Carmensita</text><path d="M188 334 q 12 -8 25 0 t 25 0 t 25 0 t 25 0 t 25 0" stroke="#E2725B" stroke-width="5" fill="none" stroke-linecap="round"></path></svg>
+      <div><div class="hname">Pool Bar Carmensita</div><div class="hsub" id="hsubTxt">Apart Hotel Ponderosa</div></div>
+    </a>
     <div class="langs" id="langs"></div>
   </div>
+  <div class="htext">
   <h1 id="h1"></h1>
   <p class="lead" id="lead"></p>
   <div class="where" id="where" style="display:none"></div>
+  </div>
 </header>
 <nav id="nav"></nav>
 <div class="filters">

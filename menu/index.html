@@ -144,7 +144,10 @@ textarea,input[type=text]{width:100%;border:1px solid var(--line);border-radius:
 <div class="toast" id="toast"></div>
 
 <script>
-const ORDERING = false;
+const ORDERS_LIVE = false; // metti true quando il tablet è pronto al bar
+const ORDERING = ORDERS_LIVE || location.search.includes("prova") || location.hash==="#cucina";
+const SB_URL = "https://zzuddtthznlvjyxxcwov.supabase.co";
+const SB_KEY = "sb_publishable_4jG2vJWzj2dxUXoNeMm69w_1aCS0PN-"; // chiave pubblica (sicura nel browser)
 const SHOW_ALLERGENS = true; // confermati dal bar il 23/11/2026
 
 const L = ["en","es","de","it"];
@@ -186,6 +189,10 @@ const UI = {
   s3:{en:"On its way",es:"En camino",de:"Unterwegs",it:"In arrivo"},
   newOrder:{en:"Order something else",es:"Pedir algo más",de:"Noch etwas bestellen",it:"Ordina altro"},
   demoSent:{en:"In the live version this order appears instantly on the kitchen / reception tablet.",es:"En la versión real el pedido aparece al instante en la tablet de cocina / recepción.",de:"In der Live-Version erscheint die Bestellung sofort auf dem Küchen-/Rezeptions-Tablet.",it:"Nella versione reale l'ordine arriva subito sul tablet della cucina / reception."},
+  sending:{en:"Sending…",es:"Enviando…",de:"Wird gesendet…",it:"Invio in corso…"},
+  sendErr:{en:"The order could not be sent. Please try again or ask a waiter.",es:"No se ha podido enviar el pedido. Inténtalo de nuevo o avisa a un camarero.",de:"Die Bestellung konnte nicht gesendet werden. Bitte erneut versuchen oder Kellner fragen.",it:"Non è stato possibile inviare l'ordine. Riprova o chiedi a un cameriere."},
+  retry:{en:"Try again",es:"Reintentar",de:"Erneut versuchen",it:"Riprova"},
+  payNote:{en:"Pay at the bar or to the waiter. The status updates by itself.",es:"Se paga en la barra o al camarero. El estado se actualiza solo.",de:"Bezahlung an der Bar oder beim Kellner. Der Status aktualisiert sich automatisch.",it:"Si paga al bar o al cameriere. Lo stato si aggiorna da solo."},
   callSent:{en:"A waiter is on the way 🛎",es:"Un camarero va hacia ti 🛎",de:"Ein Kellner ist unterwegs 🛎",it:"Un cameriere sta arrivando 🛎"},
   where:{en:"Where are you?",es:"¿Dónde estás?",de:"Wo sind Sie?",it:"Dove sei?"},
   number:{en:"Number",es:"Número",de:"Nummer",it:"Numero"},
@@ -421,21 +428,28 @@ function cartSheet(){
 }
 
 function sent(){
-  const no = Math.floor(100+Math.random()*900);
-  const order = {no, loc:{type:loc.type,n:String(loc.n)}, items:Object.entries(cart).map(([id,q])=>({id:+id,q})), note:String(draft.note||"").slice(0,300), total:Math.round(sum()*100)/100, status:"new", ts:Date.now(), lang};
-  const live = pushOrder(order);
-  openSheet(`<div class="big">✅</div><h3 class="center">${t("sent")}</h3>
-   <p class="center small">${t("orderNo")} #${no} · ${t(loc.type)} ${loc.n} · ${eur(sum())}</p>
-   <div class="steps">
-     <div class="st done" id="st1"><div class="dot">✓</div>${t("s1")}</div>
-     <div class="st now" id="st2"><div class="dot"></div>${t("s2")}</div>
-     <div class="st" id="st3"><div class="dot"></div>${t("s3")}</div>
-   </div>
-   <p class="small center" style="background:#f1e7d8;border-radius:12px;padding:10px">ℹ️ ${t("demoSent")}</p>
-   <button class="primary" id="againBtn">${t("newOrder")}</button>`);
-  cart={}; draft.note=""; renderMain(); renderBar();
-  live.then(ok=>{ if(!ok) setTimeout(()=>paintSteps("prep"),3500); });
-  $("#againBtn").onclick=closeSheet;
+  const order = {loc:{type:loc.type,n:String(loc.n)}, items:Object.entries(cart).map(([id,q])=>({id:+id,q})), note:String(draft.note||"").slice(0,300), total:Math.round(sum()*100)/100, lang};
+  const tot = sum();
+  openSheet(`<div class="big">⏳</div><h3 class="center">${t("sending")}</h3>`);
+  pushOrder(order).then(res=>{
+    if(!res){
+      openSheet(`<div class="big">⚠️</div><p class="center">${t("sendErr")}</p>
+        <button class="primary" id="retryBtn">${t("retry")}</button><button class="ghost" id="backBtn">${t("back")}</button>`);
+      $("#retryBtn").onclick=()=>sent(); $("#backBtn").onclick=closeSheet; return;
+    }
+    openSheet(`<div class="big">✅</div><h3 class="center">${t("sent")}</h3>
+     <p class="center small">${t("orderNo")} #${res.no} · ${t(order.loc.type)} ${order.loc.n} · ${eur(tot)}</p>
+     <div class="steps">
+       <div class="st done" id="st1"><div class="dot">✓</div>${t("s1")}</div>
+       <div class="st now" id="st2"><div class="dot"></div>${t("s2")}</div>
+       <div class="st" id="st3"><div class="dot"></div>${t("s3")}</div>
+     </div>
+     <p class="small center" style="background:#f1e7d8;border-radius:12px;padding:10px">ℹ️ ${t("payNote")}</p>
+     <button class="primary" id="againBtn">${t("newOrder")}</button>`);
+    paintSteps("new"); watchOrder(res.id);
+    cart={}; draft.note=""; renderMain(); renderBar();
+    $("#againBtn").onclick=closeSheet;
+  });
 }
 
 function paintSteps(st){
@@ -447,30 +461,29 @@ function paintSteps(st){
   if(k===0){const el=$("#st2"); if(el) el.className="st now";}
 }
 
-/* ---------- live connection (shared db) ---------- */
-let DB = null, dbReady = null, unsubOrder = null;
-const bc = (()=>{try{return new BroadcastChannel("menu-demo")}catch(e){return null}})();
-function getDB(){
-  if(!dbReady) dbReady = (window.claude && window.claude.use ? window.claude.use("db") : Promise.resolve(null)).then(d=>{DB=d;return d}).catch(()=>null);
-  return dbReady;
+/* ---------- live connection (Supabase) ---------- */
+async function rpc(fn, body){
+  const r = await fetch(SB_URL+"/rest/v1/rpc/"+fn,{method:"POST",headers:{apikey:SB_KEY,"Content-Type":"application/json"},body:JSON.stringify(body||{})});
+  if(!r.ok) throw new Error(fn+" "+r.status);
+  const txt = await r.text(); return txt ? JSON.parse(txt) : null;
 }
+let watchTimer = null;
 async function pushOrder(order){
-  const d = await getDB();
-  const id = "o"+order.ts+"-"+order.no;
-  if(bc) try{bc.postMessage({kind:"order",id,order})}catch(e){}
-  if(!d) return false;
-  try{
-    const ref = d.collection("orders").doc(id);
-    await ref.set(order);
-    if(unsubOrder) unsubOrder();
-    unsubOrder = ref.onSnapshot(s=>{ if(s.exists) paintSteps(s.data().status); }, ()=>{});
-    return true;
-  }catch(e){ return false; }
+  for(let i=0;i<2;i++){
+    try{ return await rpc("place_order",{p_loc_type:order.loc.type,p_loc_n:order.loc.n,p_items:order.items,p_note:order.note,p_total:order.total,p_lang:order.lang}); }
+    catch(e){ await new Promise(r=>setTimeout(r,1200)); }
+  }
+  return null;
+}
+function watchOrder(id){
+  clearInterval(watchTimer);
+  watchTimer = setInterval(async()=>{
+    if(!$("#st1")){ clearInterval(watchTimer); return; }
+    try{ const st = await rpc("order_status",{p_id:id}); if(st){ paintSteps(st); if(st==="done") clearInterval(watchTimer); } }catch(e){}
+  }, 8000);
 }
 async function pushCall(){
-  const d = await getDB(); const c = {loc:{type:loc.type,n:String(loc.n)}, ts:Date.now()};
-  if(bc) try{bc.postMessage({kind:"call",id:"c"+c.ts,call:c})}catch(e){}
-  if(d) try{ await d.collection("calls").doc("c"+c.ts).set(c);}catch(e){}
+  try{ await rpc("place_call",{p_loc_type:loc.type,p_loc_n:String(loc.n)}); }catch(e){}
 }
 
 document.addEventListener("click",e=>{
@@ -502,15 +515,18 @@ const KUI = {
   ok:{it:"Fatto",es:"Hecho",en:"Done"},
   sound:{it:"🔔 Attiva suono",es:"🔔 Activar sonido",en:"🔔 Enable sound"},
   soundOn:{it:"🔔 Suono attivo",es:"🔔 Sonido activo",en:"🔔 Sound on"},
-  sim:{it:"+ Simula ordine",es:"+ Simular pedido",en:"+ Simulate order"},
-  clear:{it:"Svuota demo",es:"Vaciar demo",en:"Clear demo"},
+  pin:{it:"Inserisci il PIN",es:"Introduce el PIN",en:"Enter PIN"},
+  pinBad:{it:"PIN errato",es:"PIN incorrecto",en:"Wrong PIN"},
+  pinLocked:{it:"Troppi tentativi, riprova tra 10 minuti",es:"Demasiados intentos, prueba en 10 minutos",en:"Too many attempts, try again in 10 minutes"},
+  enter:{it:"Entra",es:"Entrar",en:"Enter"},
+  logout:{it:"Esci",es:"Salir",en:"Log out"},
   today:{it:"Consegnati",es:"Entregados",en:"Delivered"},
   revenue:{it:"Incasso",es:"Ingresos",en:"Revenue"},
   empty:{it:"Nessun ordine",es:"Sin pedidos",en:"No orders"},
   min:{it:"min fa",es:"min",en:"min ago"},
   now:{it:"adesso",es:"ahora",en:"just now"},
   live:{it:"Collegato in tempo reale",es:"Conectado en tiempo real",en:"Live connection"},
-  offline:{it:"Modalità demo locale",es:"Modo demo local",en:"Local demo mode"},
+  offline:{it:"Connessione assente…",es:"Sin conexión…",en:"Offline…"},
   note:{it:"Nota",es:"Nota",en:"Note"},
   guestLang:{it:"Lingua ospite",es:"Idioma cliente",en:"Guest language"},
   table:{it:"Tavolo",es:"Mesa",en:"Table"},
@@ -556,11 +572,11 @@ function kitchen(){
   </style>
   <div class="kh"><h1>🍽 ${""}<span id="kt"></span></h1><div class="status off" id="kst"><i></i><span></span></div><div class="sp"></div>
    <div class="langs" id="klang"></div>
-   <button class="pill" id="ksound"></button><button class="pill" id="ksim"></button><button class="pill" id="kclr"></button></div>
+   <button class="pill" id="ksound"></button><button class="pill" id="kout"></button></div>
   <div class="stats" id="kstats"></div>
   <div class="callsbar" id="kcalls"></div>
   <div class="cols" id="kcols"></div>
-  <div class="ft">Pool Bar Carmensita · DEMO</div>`;
+  <div class="ft">Pool Bar Carmensita</div>`;
 
   const nameOf = id => (M[id]||{n:{}}).n[kl] || (M[id]||{n:{}}).n.en || "?";
   const locTxt = l => l ? `${l.type==="room"?"🛏 "+kt("room"):"🍽 "+kt("table")} ${String(l.n).slice(0,8)}` : "?";
@@ -573,11 +589,9 @@ function kitchen(){
     const s=$("#kst"); s.className="status"+(isLive?"":" off"); s.querySelector("span").textContent = isLive?kt("live"):kt("offline");
     $("#klang").innerHTML = ["it","es","en"].map(l=>`<button class="${l===kl?"on":""}" data-kl="${l}">${l.toUpperCase()}</button>`).join("");
     $("#ksound").textContent = audio?kt("soundOn"):kt("sound"); $("#ksound").className="pill"+(audio?" on":"");
-    $("#ksim").textContent = kt("sim"); $("#kclr").textContent = kt("clear");
+    $("#kout").textContent = kt("logout");
     const all=[...orders.values()];
-    const dn = all.filter(o=>o.status==="done");
-    const dsum = dn.reduce((a,o)=>a+(+o.total||0),0) + delivered.sum;
-    $("#kstats").innerHTML = `<div class="stat">${kt("today")}<b>${dn.length+delivered.n}</b></div><div class="stat">${kt("revenue")}<b>${eur(dsum)}</b></div>`;
+    $("#kstats").innerHTML = `<div class="stat">${kt("today")}<b>${delivered.n}</b></div><div class="stat">${kt("revenue")}<b>${eur(delivered.sum)}</b></div>`;
     $("#kcalls").innerHTML = [...calls.entries()].sort((a,b)=>a[1].ts-b[1].ts).map(([id,c])=>`<div class="call">🛎 ${locTxt(c.loc)} ${kt("calls")} · <span class="ago">${ago(c.ts)}</span><button data-cd="${id}">${kt("ok")}</button></div>`).join("");
     $("#kcols").innerHTML = ["new","prep","way"].map(st=>{
       const list = all.filter(o=>o.status===st).sort((a,b)=>a.ts-b.ts);
@@ -597,61 +611,62 @@ function kitchen(){
 
   function upsert(id,o,isNew){ const prev=orders.get(id); o._id=id; o._fresh = !prev && isNew; orders.set(id,o); if(!prev && isNew && o.status==="new") beep(); }
 
+  let PIN = (()=>{try{return localStorage.getItem("k-pin")}catch(e){return null}})();
+  let firstLoad = true;
+  async function load(){
+    if(!PIN) return;
+    let r;
+    try{ r = await rpc("kitchen_feed",{p_pin:PIN}); }catch(e){ isLive=false; paint(); return; }
+    if(r && r.error){ PIN=null; try{localStorage.removeItem("k-pin")}catch(_){} pinScreen(r.error==="locked"?kt("pinLocked"):kt("pinBad")); return; }
+    isLive=true;
+    const seen=new Set();
+    (r.orders||[]).forEach(x=>{ seen.add(x.id); const prev=orders.get(x.id);
+      const o={no:x.no,loc:{type:x.loc_type,n:x.loc_n},items:x.items,note:x.note,total:+x.total,status:x.status,ts:Date.parse(x.created_at),lang:x.lang};
+      if(prev && prev._pending && prev.status!==o.status) o.status=prev.status, o._pending=true;
+      upsert(x.id,o,!firstLoad); });
+    [...orders.keys()].forEach(k=>{ if(!seen.has(k)) orders.delete(k); });
+    const before=calls.size, had=new Set(calls.keys()); calls.clear();
+    let newCall=false;
+    (r.calls||[]).forEach(c=>{ calls.set(c.id,{loc:{type:c.loc_type,n:c.loc_n},ts:Date.parse(c.created_at)}); if(!had.has(c.id)) newCall=true; });
+    if(newCall && !firstLoad) beep();
+    delivered={n:+r.done_n||0,sum:+r.done_sum||0};
+    firstLoad=false; paint();
+  }
   async function setStatus(id, st){
     const o=orders.get(id); if(!o) return;
-    o.status=st; o._fresh=false; paint();
-    if(DB && isLive){ try{ await DB.collection("orders").doc(id).update({status:st}); }catch(e){} }
-    if(bc) try{bc.postMessage({kind:"status",id,status:st})}catch(e){}
+    o.status=st; o._fresh=false; o._pending=true;
+    if(st==="done"){ orders.delete(id); delivered.n++; delivered.sum+=(+o.total||0); }
+    paint();
+    try{ await rpc("kitchen_set_status",{p_pin:PIN,p_id:id,p_status:st}); }catch(e){}
+    o._pending=false; load();
   }
-
-  function simulate(){
-    const picks=[...M].sort(()=>Math.random()-.5).slice(0,1+Math.floor(Math.random()*3));
-    const items=picks.map(m=>({id:m.id,q:1+Math.floor(Math.random()*2)}));
-    const total=Math.round(items.reduce((a,it)=>a+M[it.id].p*it.q,0)*100)/100;
-    const isRoom=Math.random()<.4;
-    const o={no:Math.floor(100+Math.random()*900),loc:{type:isRoom?"room":"table",n:String(isRoom?100+Math.floor(Math.random()*500):1+Math.floor(Math.random()*30))},items,note:Math.random()<.4?["Sin cebolla","No ice please","Ohne Zwiebeln","Ben cotto"][Math.floor(Math.random()*4)]:"",total,status:"new",ts:Date.now(),lang:["en","de","es","it"][Math.floor(Math.random()*4)]};
-    const id="o"+o.ts+"-"+o.no;
-    if(DB && isLive){ DB.collection("orders").doc(id).set(o).catch(()=>{upsert(id,o,true);paint();}); }
-    else { upsert(id,o,true); paint(); }
+  function pinScreen(msg){
+    $("#kcols").innerHTML = `<div style="grid-column:1/-1;max-width:320px;margin:40px auto;text-align:center">
+      <h2 style="font-family:Fraunces,serif;font-size:24px;margin:0 0 14px">🔒 ${kt("pin")}</h2>
+      <input id="kpin" type="password" inputmode="numeric" autocomplete="off" maxlength="12" style="width:100%;font-size:28px;text-align:center;letter-spacing:.3em;padding:12px;border-radius:14px;border:1px solid #cfd6d9">
+      <div style="color:var(--coral);min-height:22px;margin-top:8px;font-weight:600">${msg||""}</div>
+      <button class="adv" id="kgo">${kt("enter")}</button></div>`;
+    $("#kstats").innerHTML=""; $("#kcalls").innerHTML="";
+    const go=()=>{ const v=$("#kpin").value.trim(); if(!v) return; PIN=v; try{localStorage.setItem("k-pin",v)}catch(_){} firstLoad=true; $("#kcols").innerHTML=""; load(); };
+    $("#kgo").onclick=go; $("#kpin").onkeydown=e=>{ if(e.key==="Enter") go(); }; $("#kpin").focus();
   }
 
   document.addEventListener("click",async e=>{
-    const l=e.target.closest("[data-kl]"); if(l){kl=l.dataset.kl; try{localStorage.setItem("k-lang",kl)}catch(_){} paint(); return}
-    if(e.target.closest("#ksound")){ try{ audio = audio || new (window.AudioContext||window.webkitAudioContext)(); await audio.resume(); beep(); }catch(_){ audio=null } paint(); return}
-    if(e.target.closest("#ksim")){ simulate(); return}
-    if(e.target.closest("#kclr")){
-      const ids=[...orders.keys()], cids=[...calls.keys()]; orders.clear(); calls.clear(); delivered={n:0,sum:0}; paint();
-      if(DB && isLive){ for(const id of ids){ try{await DB.collection("orders").doc(id).delete()}catch(_){} } for(const id of cids){ try{await DB.collection("calls").doc(id).delete()}catch(_){} } }
-      return}
+    const l=e.target.closest("[data-kl]"); if(l){kl=l.dataset.kl; try{localStorage.setItem("k-lang",kl)}catch(_){} if(PIN) paint(); else {paint(); pinScreen();} return}
+    if(e.target.closest("#ksound")){ try{ audio = audio || new (window.AudioContext||window.webkitAudioContext)(); await audio.resume(); beep(); }catch(_){ audio=null } paint(); if(!PIN) pinScreen(); return}
+    if(e.target.closest("#kout")){ PIN=null; try{localStorage.removeItem("k-pin")}catch(_){} orders.clear(); calls.clear(); paint(); pinScreen(); return}
     const a=e.target.closest("[data-adv]"); if(a){ const o=orders.get(a.dataset.adv); if(!o) return; setStatus(o._id, o.status==="new"?"prep":o.status==="prep"?"way":"done"); return}
-    const c=e.target.closest("[data-cd]"); if(c){ const id=c.dataset.cd; calls.delete(id); paint(); if(DB && isLive){ try{await DB.collection("calls").doc(id).delete()}catch(_){} } return}
+    const c=e.target.closest("[data-cd]"); if(c){ const id=c.dataset.cd; calls.delete(id); paint(); try{ await rpc("kitchen_clear_call",{p_pin:PIN,p_id:id}); }catch(_){} return}
   });
 
-  // same-browser fallback (two tabs)
-  if(bc) bc.onmessage = ev=>{ const m=ev.data||{}; if(isLive) return;
-    if(m.kind==="order"){ upsert(m.id,{...m.order},true); paint(); }
-    if(m.kind==="call"){ calls.set(m.id,m.call); beep(); paint(); } };
+  // tieni lo schermo acceso sul tablet
+  async function keepAwake(){ try{ if(navigator.wakeLock) await navigator.wakeLock.request("screen"); }catch(e){} }
+  keepAwake(); document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible"){ keepAwake(); load(); } });
 
   paint();
-  setInterval(paint, 30000);
-
-  getDB().then(d=>{
-    if(!d) return;
-    let first=true;
-    const timer=setTimeout(()=>{},10000);
-    d.collection("orders").orderBy("ts","desc").limit(100).onSnapshot(snap=>{
-      clearTimeout(timer); isLive=true;
-      const seen=new Set();
-      snap.docs.forEach(doc=>{ const o={...doc.data()}; seen.add(doc.id); upsert(doc.id,o,!first); });
-      [...orders.keys()].forEach(k=>{ if(!seen.has(k)) orders.delete(k); });
-      first=false; paint();
-    }, ()=>{ isLive=false; paint(); });
-    let firstC=true;
-    d.collection("calls").orderBy("ts","desc").limit(30).onSnapshot(snap=>{
-      const before=calls.size; calls.clear(); snap.docs.forEach(doc=>calls.set(doc.id,{...doc.data()}));
-      if(!firstC && calls.size>before) beep(); firstC=false; paint();
-    }, ()=>{});
-  });
+  if(PIN) load(); else pinScreen();
+  setInterval(()=>{ if(PIN) load(); }, 4000);
+  setInterval(()=>{ if(PIN) paint(); }, 30000);
 }
 
 if(ORDERING && location.hash==="#cucina"){
@@ -660,7 +675,6 @@ if(ORDERING && location.hash==="#cucina"){
 loc = parseHash();
 window.addEventListener("hashchange",()=>{const p=parseHash(); if(p){loc=p; renderWhere();}});
 render(); observe();
-if(ORDERING) getDB();
 }
 const _rm = renderMain; renderMain = function(){_rm(); observe();};
 </script>

@@ -425,7 +425,6 @@ let draft = {type:null, n:"", note:""};
 function cartSheet(){
   if(!draft.type){ draft.type = loc?loc.type:"table"; draft.n = loc?String(loc.n):""; }
   const lines = Object.entries(cart).map(([id,q])=>{const m=byId(id);return `<div class="line"><div class="n"><b>${q}×</b> ${esc(LT(m.n))}</div><div class="qty"><button class="qb minus" data-m="${id}" data-d="-1">−</button><button class="qb" data-m="${id}" data-d="1">+</button></div><div class="p">${eur(m.p*q)}</div></div>`}).join("");
-  const esc = v=>String(v).replace(/[<>&"]/g,"");
   openSheet(`<h3>${t("yourOrder")}</h3>
     ${lines}
     <div class="locbox">

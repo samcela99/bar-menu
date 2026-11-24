@@ -547,6 +547,20 @@ const KUI = {
   logout:{it:"Esci",es:"Salir",en:"Log out"},
   today:{it:"Consegnati",es:"Entregados",en:"Delivered"},
   revenue:{it:"Incasso",es:"Ingresos",en:"Revenue"},
+  close:{it:"🧾 Chiudi cassa",es:"🧾 Cerrar caja",en:"🧾 Close till"},
+  hist:{it:"Storico",es:"Historial",en:"History"},
+  closeQ:{it:"Chiudere la cassa del turno? Il contatore ripartirà da zero.",es:"¿Cerrar la caja del turno? El contador volverá a cero.",en:"Close the till for this shift? The counter will restart from zero."},
+  closeYes:{it:"Sì, chiudi cassa",es:"Sí, cerrar caja",en:"Yes, close till"},
+  cancel:{it:"Annulla",es:"Cancelar",en:"Cancel"},
+  closed:{it:"Cassa chiusa",es:"Caja cerrada",en:"Till closed"},
+  shift:{it:"Turno",es:"Turno",en:"Shift"},
+  ordersN:{it:"Ordini consegnati",es:"Pedidos entregados",en:"Orders delivered"},
+  total:{it:"Totale",es:"Total",en:"Total"},
+  sold:{it:"Venduto",es:"Vendido",en:"Sold"},
+  print:{it:"🖨 Stampa",es:"🖨 Imprimir",en:"🖨 Print"},
+  closeBtn:{it:"Chiudi",es:"Cerrar",en:"Close"},
+  noHist:{it:"Nessuna chiusura",es:"Sin cierres",en:"No closures yet"},
+  qrOnly:{it:"Solo ordini arrivati dal QR",es:"Solo pedidos recibidos por QR",en:"QR orders only"},
   empty:{it:"Nessun ordine",es:"Sin pedidos",en:"No orders"},
   min:{it:"min fa",es:"min",en:"min ago"},
   now:{it:"adesso",es:"ahora",en:"just now"},
@@ -594,6 +608,18 @@ function kitchen(){
    .oc.way .adv{background:var(--leaf)}
    .emptyc{color:var(--muted);font-size:13px;text-align:center;padding:30px 0;border:2px dashed #d5dcdf;border-radius:16px}
    .ft{font-size:11px;color:var(--muted);text-align:center;padding-bottom:20px}
+   .stats{align-items:center}
+   .cbtn{border:0;border-radius:12px;padding:12px 16px;font-weight:700;font-size:14px;background:var(--ink);color:#fff}
+   .cbtn.ghost2{background:#fff;color:var(--ink)}
+   .kov{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:30px 12px;z-index:50}
+   .kbox{background:#fff;border-radius:18px;max-width:460px;width:100%;padding:20px}
+   .kbox h3{font-family:Fraunces,serif;font-weight:500;font-size:24px;margin:0 0 6px}
+   .kbox .sub{color:var(--muted);font-size:13px;margin-bottom:12px}
+   .kbox .big2{display:flex;gap:10px;margin:10px 0} .kbox .big2 div{flex:1;background:#f3f5f6;border-radius:12px;padding:10px 12px;font-size:13px;color:var(--muted)} .kbox .big2 b{display:block;font-size:24px;color:var(--ink)}
+   .kbox .ln{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed var(--line);font-size:15px}
+   .kbox .bb{display:flex;gap:10px;margin-top:16px} .kbox .bb button{flex:1;height:48px;border-radius:12px;border:0;font-weight:700;font-size:15px;background:#eef1f2}
+   .kbox .bb .pri{background:var(--ink);color:#fff}
+   @media print{ body>*:not(.kov){display:none!important} .kov{position:static;background:none;padding:0} .kbox .bb{display:none} }
   </style>
   <div class="kh"><h1>🍽 ${""}<span id="kt"></span></h1><div class="status off" id="kst"><i></i><span></span></div><div class="sp"></div>
    <div class="langs" id="klang"></div>
@@ -616,7 +642,7 @@ function kitchen(){
     $("#ksound").textContent = audio?kt("soundOn"):kt("sound"); $("#ksound").className="pill"+(audio?" on":"");
     $("#kout").textContent = kt("logout");
     const all=[...orders.values()];
-    $("#kstats").innerHTML = `<div class="stat">${kt("today")}<b>${delivered.n}</b></div><div class="stat">${kt("revenue")}<b>${eur(delivered.sum)}</b></div>`;
+    $("#kstats").innerHTML = `<div class="stat">${kt("today")}<b>${delivered.n}</b></div><div class="stat">${kt("revenue")}<b>${eur(delivered.sum)}</b></div><button class="cbtn" id="kclose">${kt("close")}</button><button class="cbtn ghost2" id="khist">${kt("hist")}</button>`;
     $("#kcalls").innerHTML = [...calls.entries()].sort((a,b)=>a[1].ts-b[1].ts).map(([id,c])=>`<div class="call">🛎 ${locTxt(c.loc)} ${kt("calls")} · <span class="ago">${ago(c.ts)}</span><button data-cd="${id}">${kt("ok")}</button></div>`).join("");
     $("#kcols").innerHTML = ["new","prep","way"].map(st=>{
       const list = all.filter(o=>o.status===st).sort((a,b)=>a.ts-b.ts);
@@ -665,6 +691,32 @@ function kitchen(){
     try{ await rpc("kitchen_set_status",{p_pin:PIN,p_id:id,p_status:st}); }catch(e){}
     o._pending=false; load();
   }
+  const fmtT = ts => { try{ return new Date(ts).toLocaleString(kl==="es"?"es-ES":kl==="en"?"en-GB":"it-IT",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit",timeZone:"Atlantic/Canary"}); }catch(e){ return ""; } };
+  function overlay(html){ const d=document.createElement("div"); d.className="kov"; d.innerHTML=`<div class="kbox">${html}</div>`; document.body.appendChild(d); return d; }
+  function summaryHTML(r){
+    const items=(r.items||[]).map(it=>`<div class="ln"><span>${nameOf(it)}</span><b>${+it.q||0}×</b></div>`).join("");
+    return `<h3>🧾 ${kt("closed")}</h3><div class="sub">${kt("shift")}: ${fmtT(r.from_ts||r.from)} → ${fmtT(r.to_ts||r.to)} · ${kt("qrOnly")}</div>
+      <div class="big2"><div>${kt("ordersN")}<b>${+r.n||0}</b></div><div>${kt("total")}<b>${eur(+r.total||0)}</b></div></div>
+      ${items?`<div class="sub" style="margin-top:12px;font-weight:600">${kt("sold")}</div>${items}`:""}
+      <div class="bb"><button data-kprint>${kt("print")}</button><button class="pri" data-kx>${kt("closeBtn")}</button></div>`;
+  }
+  function closeAsk(){
+    const d=overlay(`<h3>🧾 ${kt("close").replace("🧾 ","")}</h3><p>${kt("closeQ")}</p>
+      <div class="big2"><div>${kt("today")}<b>${delivered.n}</b></div><div>${kt("revenue")}<b>${eur(delivered.sum)}</b></div></div>
+      <div class="bb"><button data-kx>${kt("cancel")}</button><button class="pri" id="kcy">${kt("closeYes")}</button></div>`);
+    d.querySelector("#kcy").onclick=async()=>{
+      d.querySelector("#kcy").disabled=true;
+      try{ const r=await rpc("kitchen_close_shift",{p_pin:PIN}); if(r && r.error) throw 0; d.remove(); overlay(summaryHTML(r)); load(); }
+      catch(e){ d.querySelector("#kcy").disabled=false; }
+    };
+  }
+  async function history(){
+    let r; try{ r=await rpc("kitchen_closures",{p_pin:PIN}); }catch(e){ return; }
+    const list=(r&&r.list)||[];
+    const d=overlay(`<h3>${kt("hist")}</h3>${list.length?list.map((c,i)=>`<div class="ln" style="cursor:pointer" data-hi="${i}"><span>${fmtT(c.from_ts)} → ${fmtT(c.to_ts)}</span><b>${c.n} · ${eur(+c.total)}</b></div>`).join(""):`<p class="sub">${kt("noHist")}</p>`}
+      <div class="bb"><button class="pri" data-kx>${kt("closeBtn")}</button></div>`);
+    d.querySelectorAll("[data-hi]").forEach(el=>el.onclick=()=>{ d.remove(); overlay(summaryHTML(list[+el.dataset.hi])); });
+  }
   function pinScreen(msg){
     $("#kcols").innerHTML = `<div style="grid-column:1/-1;max-width:320px;margin:40px auto;text-align:center">
       <h2 style="font-family:Fraunces,serif;font-size:24px;margin:0 0 14px">🔒 ${kt("pin")}</h2>
@@ -680,6 +732,10 @@ function kitchen(){
     const l=e.target.closest("[data-kl]"); if(l){kl=l.dataset.kl; try{localStorage.setItem("k-lang",kl)}catch(_){} if(PIN) paint(); else {paint(); pinScreen();} return}
     if(e.target.closest("#ksound")){ try{ audio = audio || new (window.AudioContext||window.webkitAudioContext)(); await audio.resume(); beep(); }catch(_){ audio=null } paint(); if(!PIN) pinScreen(); return}
     if(e.target.closest("#kout")){ PIN=null; try{localStorage.removeItem("k-pin")}catch(_){} orders.clear(); calls.clear(); paint(); pinScreen(); return}
+    if(e.target.closest("#kclose")){ closeAsk(); return}
+    if(e.target.closest("#khist")){ history(); return}
+    if(e.target.closest("[data-kx]")){ e.target.closest(".kov").remove(); return}
+    if(e.target.closest("[data-kprint]")){ window.print(); return}
     const a=e.target.closest("[data-adv]"); if(a){ const o=orders.get(a.dataset.adv); if(!o) return; setStatus(o._id, o.status==="new"?"prep":o.status==="prep"?"way":"done"); return}
     const c=e.target.closest("[data-cd]"); if(c){ const id=c.dataset.cd; calls.delete(id); paint(); try{ await rpc("kitchen_clear_call",{p_pin:PIN,p_id:id}); }catch(_){} return}
   });

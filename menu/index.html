@@ -109,6 +109,7 @@ textarea,input[type=text]{width:100%;border:1px solid var(--line);border-radius:
 .toast.show{opacity:1;transform:translateX(-50%)}
 .big{font-size:44px;text-align:center;margin:8px 0}
 .center{text-align:center}
+.item.so{opacity:.55}.soldout{margin-left:auto;font-size:12px;font-weight:700;color:var(--coral);border:1px solid var(--coral);border-radius:999px;padding:3px 10px}
 </style>
 </head>
 <body>
@@ -145,7 +146,7 @@ textarea,input[type=text]{width:100%;border:1px solid var(--line);border-radius:
 
 <script>
 const ORDERS_LIVE = true;  // metti true quando il tablet è pronto al bar
-const ORDERING = ORDERS_LIVE || location.search.includes("prova") || location.hash==="#cucina";
+const ORDERING = ORDERS_LIVE || location.search.includes("prova") || location.hash==="#cucina" || location.hash==="#gestione";
 const SB_URL = "https://zzuddtthznlvjyxxcwov.supabase.co";
 const SB_KEY = "sb_publishable_4jG2vJWzj2dxUXoNeMm69w_1aCS0PN-"; // chiave pubblica (sicura nel browser)
 const SHOW_ALLERGENS = true; // confermati dal bar il 23/11/2026
@@ -169,6 +170,7 @@ const UI = {
   legend:{en:"Allergens (EU Reg. 1169/2011)",es:"Alérgenos (Reg. UE 1169/2011)",de:"Allergene (EU-VO 1169/2011)",it:"Allergeni (Reg. UE 1169/2011)"},
   askAl:{en:"Allergies or intolerances?",es:"¿Alergias o intolerancias?",de:"Allergien oder Unverträglichkeiten?",it:"Allergie o intolleranze?"},
   legendNote:{en:"Please tell our staff about any allergy or intolerance.",es:"Informe al personal de cualquier alergia o intolerancia.",de:"Bitte informieren Sie unser Personal über Allergien oder Unverträglichkeiten.",it:"Comunica al personale eventuali allergie o intolleranze."},
+  soldOut:{en:"Sold out",es:"Agotado",de:"Ausverkauft",it:"Esaurito"},
   pop:{en:"Popular",es:"Popular",de:"Beliebt",it:"Il più scelto"},
   veg:{en:"Vegetarian",es:"Vegetariano",de:"Vegetarisch",it:"Vegetariano"},
   vegan:{en:"Vegan",es:"Vegano",de:"Vegan",it:"Vegano"},
@@ -289,7 +291,28 @@ const M = [
  {c:"panini",i:"🥪",p:8,a:["gl"],t:[],n:{"it": "Panino salsiccia e patate saltate", "en": "Sausage & sautéed potato sandwich", "es": "Bocadillo de salchicha y patatas salteadas", "de": "Sandwich mit Wurst und Bratkartoffeln"},d:{"it": "", "en": "", "es": "", "de": ""}},
  {c:"panini",i:"🌭",p:4,a:["gl", "mu"],t:[],n:{"it": "Hot dog", "en": "Hot dog", "es": "Perrito caliente", "de": "Hotdog"},d:{"it": "", "en": "", "es": "", "de": ""}}
 ];
-M.forEach((m,i)=>m.id=i);
+M.forEach((m,i)=>{m.id=i; m.av=true;});
+let MI = {}; const indexM = ()=>{ MI={}; M.forEach(m=>MI[m.id]=m); }; indexM();
+const byId = id => MI[id];
+const esc = v => String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const LT = (o,l) => { o=o||{}; l=l||lang; return o[l] || o.it || o.es || o.en || o.de || ""; };
+function applyMenu(list){
+  if(!Array.isArray(list) || !list.length) return false;
+  M.splice(0, M.length, ...list.map(x=>({id:x.id,c:x.c,i:x.i||"🍽",p:+x.p,a:x.a||[],t:x.t||[],n:x.n||{},d:x.d||{},av:x.av!==false})));
+  indexM();
+  if(typeof cart!=="undefined") Object.keys(cart).forEach(id=>{ const m=byId(id); if(!m||!m.av) delete cart[id]; });
+  return true;
+}
+async function loadMenu(){
+  try{
+    const r = await fetch(SB_URL+"/rest/v1/rpc/menu_public",{method:"POST",headers:{apikey:SB_KEY,"Content-Type":"application/json"},body:"{}"});
+    if(!r.ok) return false;
+    const list = await r.json();
+    try{ localStorage.setItem("menu-cache", JSON.stringify(list)); }catch(e){}
+    return applyMenu(list);
+  }catch(e){ return false; }
+}
+try{ applyMenu(JSON.parse(localStorage.getItem("menu-cache")||"null")); }catch(e){}
 
 let lang = (()=>{try{return localStorage.getItem("menu-lang")}catch(e){return null}})() || ((navigator.language||"en").slice(0,2));
 if(!L.includes(lang)) lang="en";
@@ -344,22 +367,24 @@ function itemHTML(m){
   const tags = m.t.map(x=>`<span class="tag ${x==="pop"?"pop":"veg"}">${x==="pop"?"★ ":"🌱 "}${t(x)}</span>`).join("");
   const als = !SHOW_ALLERGENS ? "" : m.a.map(a=>`<span class="al" title="${AL[a][lang]}">${AL[a].e}</span>`).join("");
   const q = cart[m.id]||0;
-  const ctrl = ORDERING ? `<div class="qty">${q?`<button class="qb minus" data-m="${m.id}" data-d="-1" aria-label="-">−</button><span class="qn">${q}</span>`:""}<button class="qb" data-m="${m.id}" data-d="1" aria-label="+">+</button></div>` : "";
+  const so = m.av===false;
+  const ctrl = so ? `<span class="soldout">${t("soldOut")}</span>` : ORDERING ? `<div class="qty">${q?`<button class="qb minus" data-m="${m.id}" data-d="-1" aria-label="-">−</button><span class="qn">${q}</span>`:""}<button class="qb" data-m="${m.id}" data-d="1" aria-label="+">+</button></div>` : "";
   const hide = m.a.some(a=>excl.has(a));
-  return `<div class="item ${hide?"hidden":""}"><div class="ic">${m.i}</div><div class="body">
-    <div class="row"><div class="name">${m.n[lang]}</div><div class="price">${eur(m.p)}</div></div>
-    ${m.d[lang]?`<div class="desc">${m.d[lang]}</div>`:`<div style="height:8px"></div>`}
+  const dsc = LT(m.d);
+  return `<div class="item ${hide?"hidden":""} ${so?"so":""}"><div class="ic">${esc(m.i)}</div><div class="body">
+    <div class="row"><div class="name">${esc(LT(m.n))}</div><div class="price">${eur(m.p)}</div></div>
+    ${dsc?`<div class="desc">${esc(dsc)}</div>`:`<div style="height:8px"></div>`}
     <div class="meta">${tags}${als}${ctrl}</div></div></div>`;
 }
 
 function renderMain(){
-  $("#main").innerHTML = CATS.map(c=>`<section id="s-${c.id}"><h2>${c.e} ${c.n[lang]}</h2><div class="hours">🕐 ${c.h[lang]}</div>${M.filter(m=>m.c===c.id).map(itemHTML).join("")}</section>`).join("")
+  $("#main").innerHTML = CATS.filter(c=>M.some(m=>m.c===c.id)).map(c=>`<section id="s-${c.id}"><h2>${c.e} ${c.n[lang]}</h2><div class="hours">🕐 ${c.h[lang]}</div>${M.filter(m=>m.c===c.id).map(itemHTML).join("")}</section>`).join("")
    + (SHOW_ALLERGENS ? `<div class="legend"><h3>${t("legend")}</h3><div class="lg">${Object.values(AL).map(v=>`<span>${v.e} ${v[lang]}</span>`).join("")}</div><p class="small" style="margin:10px 0 0">${t("legendNote")}</p></div>` : `<div class="legend"><h3>${t("askAl")}</h3><p class="small" style="margin:0">${t("legendNote")}</p></div>`)
    + `<footer>${t("footer")}<br><a href="https://wa.me/34603399528" style="color:#0f5e6e;font-weight:600;text-decoration:none">WhatsApp +34 603 39 95 28</a></footer>`;
 }
 
 function count(){return Object.values(cart).reduce((a,b)=>a+b,0)}
-function sum(){return Object.entries(cart).reduce((s,[id,q])=>s+M[id].p*q,0)}
+function sum(){return Object.entries(cart).reduce((s,[id,q])=>s+((byId(id)||{p:0}).p)*q,0)}
 
 function renderBar(){
   if(!ORDERING) return;
@@ -399,7 +424,7 @@ function locSheet(after){
 let draft = {type:null, n:"", note:""};
 function cartSheet(){
   if(!draft.type){ draft.type = loc?loc.type:"table"; draft.n = loc?String(loc.n):""; }
-  const lines = Object.entries(cart).map(([id,q])=>{const m=M[id];return `<div class="line"><div class="n"><b>${q}×</b> ${m.n[lang]}</div><div class="qty"><button class="qb minus" data-m="${id}" data-d="-1">−</button><button class="qb" data-m="${id}" data-d="1">+</button></div><div class="p">${eur(m.p*q)}</div></div>`}).join("");
+  const lines = Object.entries(cart).map(([id,q])=>{const m=byId(id);return `<div class="line"><div class="n"><b>${q}×</b> ${esc(LT(m.n))}</div><div class="qty"><button class="qb minus" data-m="${id}" data-d="-1">−</button><button class="qb" data-m="${id}" data-d="1">+</button></div><div class="p">${eur(m.p*q)}</div></div>`}).join("");
   const esc = v=>String(v).replace(/[<>&"]/g,"");
   openSheet(`<h3>${t("yourOrder")}</h3>
     ${lines}
@@ -428,7 +453,7 @@ function cartSheet(){
 }
 
 function sent(){
-  const order = {loc:{type:loc.type,n:String(loc.n)}, items:Object.entries(cart).map(([id,q])=>({id:+id,q})), note:String(draft.note||"").slice(0,300), total:Math.round(sum()*100)/100, lang};
+  const order = {loc:{type:loc.type,n:String(loc.n)}, items:Object.entries(cart).map(([id,q])=>({id:+id,q,n:(byId(id)||{}).n||{}})), note:String(draft.note||"").slice(0,300), total:Math.round(sum()*100)/100, lang};
   const tot = sum();
   openSheet(`<div class="big">⏳</div><h3 class="center">${t("sending")}</h3>`);
   pushOrder(order).then(res=>{
@@ -572,13 +597,13 @@ function kitchen(){
   </style>
   <div class="kh"><h1>🍽 ${""}<span id="kt"></span></h1><div class="status off" id="kst"><i></i><span></span></div><div class="sp"></div>
    <div class="langs" id="klang"></div>
-   <button class="pill" id="ksound"></button><button class="pill" id="kout"></button></div>
+   <a class="pill" href="#gestione" style="text-decoration:none">✏️ Menù</a><button class="pill" id="ksound"></button><button class="pill" id="kout"></button></div>
   <div class="stats" id="kstats"></div>
   <div class="callsbar" id="kcalls"></div>
   <div class="cols" id="kcols"></div>
   <div class="ft">Pool Bar Carmensita</div>`;
 
-  const nameOf = id => (M[id]||{n:{}}).n[kl] || (M[id]||{n:{}}).n.en || "?";
+  const nameOf = it => esc(LT(it.n && Object.keys(it.n).length ? it.n : (byId(it.id)||{}).n, kl) || "?");
   const locTxt = l => l ? `${l.type==="room"?"🛏 "+kt("room"):"🍽 "+kt("table")} ${String(l.n).slice(0,8)}` : "?";
   const ago = ts => { const m=Math.floor((Date.now()-ts)/60000); return m<1?kt("now"):`${m} ${kt("min")}`; };
   let delivered = {n:0,sum:0};
@@ -599,7 +624,7 @@ function kitchen(){
     }).join("");
   }
   function card(o){
-    const items=(o.items||[]).map(it=>`<div class="oi"><b>${+it.q||0}×</b>${nameOf(it.id)}</div>`).join("");
+    const items=(o.items||[]).map(it=>`<div class="oi"><b>${+it.q||0}×</b>${nameOf(it)}</div>`).join("");
     const btn = o.status==="new"?kt("toPrep"):o.status==="prep"?kt("toWay"):kt("toDone");
     const note = o.note?`<div class="onote">📝 <b>${kt("note")}:</b> ${String(o.note).replace(/[<>&]/g,"")}</div>`:"";
     return `<div class="oc ${o.status} ${o._fresh?"fresh":""}"><div class="oh"><div class="where2">${locTxt(o.loc)}</div><div class="ago">${ago(o.ts)}</div></div>
@@ -669,12 +694,201 @@ function kitchen(){
   setInterval(()=>{ if(PIN) paint(); }, 30000);
 }
 
-if(ORDERING && location.hash==="#cucina"){
+/* ---------- GESTIONE MENÙ (tablet, con PIN) ---------- */
+const AUI = {
+  title:{it:"Gestione menù",es:"Gestión de la carta",en:"Menu manager"},
+  back:{it:"← Ordini",es:"← Pedidos",en:"← Orders"},
+  add:{it:"+ Aggiungi",es:"+ Añadir",en:"+ Add"},
+  avail:{it:"Disponibile",es:"Disponible",en:"Available"},
+  sold:{it:"Esaurito",es:"Agotado",en:"Sold out"},
+  edit:{it:"Modifica",es:"Editar",en:"Edit"},
+  newItem:{it:"Nuovo piatto",es:"Nuevo plato",en:"New item"},
+  editItem:{it:"Modifica piatto",es:"Editar plato",en:"Edit item"},
+  cat:{it:"Categoria",es:"Categoría",en:"Category"},
+  icon:{it:"Icona",es:"Icono",en:"Icon"},
+  price:{it:"Prezzo €",es:"Precio €",en:"Price €"},
+  name:{it:"Nome",es:"Nombre",en:"Name"},
+  desc:{it:"Descrizione (facoltativa)",es:"Descripción (opcional)",en:"Description (optional)"},
+  other:{it:"Altre lingue (facoltative: se vuote si vede la versione principale)",es:"Otros idiomas (opcional: si están vacíos se ve la versión principal)",en:"Other languages (optional: if empty the main version is shown)"},
+  alg:{it:"Allergeni",es:"Alérgenos",en:"Allergens"},
+  tags:{it:"Etichette",es:"Etiquetas",en:"Labels"},
+  save:{it:"Salva",es:"Guardar",en:"Save"},
+  cancel:{it:"Annulla",es:"Cancelar",en:"Cancel"},
+  del:{it:"Elimina piatto",es:"Eliminar plato",en:"Delete item"},
+  delQ:{it:"Eliminare questo piatto dal menù?",es:"¿Eliminar este plato de la carta?",en:"Delete this item from the menu?"},
+  yesDel:{it:"Sì, elimina",es:"Sí, eliminar",en:"Yes, delete"},
+  saved:{it:"Salvato ✓ — già visibile ai clienti",es:"Guardado ✓ — ya visible para los clientes",en:"Saved ✓ — already visible to guests"},
+  err:{it:"Errore, riprova",es:"Error, inténtalo de nuevo",en:"Error, try again"},
+  needName:{it:"Scrivi almeno il nome",es:"Escribe al menos el nombre",en:"Enter at least the name"},
+  needPrice:{it:"Prezzo non valido",es:"Precio no válido",en:"Invalid price"},
+  mainLang:{it:"Lingua principale",es:"Idioma principal",en:"Main language"},
+  hint:{it:"Tocca l'interruttore per segnare un piatto esaurito. Le modifiche arrivano subito sul QR.",es:"Toca el interruptor para marcar un plato como agotado. Los cambios llegan al instante al QR.",en:"Tap the switch to mark an item sold out. Changes reach the QR instantly."},
+  pin:{it:"Inserisci il PIN",es:"Introduce el PIN",en:"Enter PIN"},
+  pinBad:{it:"PIN errato",es:"PIN incorrecto",en:"Wrong PIN"},
+  enter:{it:"Entra",es:"Entrar",en:"Enter"}
+};
+function admin(){
+  let kl = (()=>{try{return localStorage.getItem("k-lang")}catch(e){return null}})() || "it";
+  let PIN = (()=>{try{return localStorage.getItem("k-pin")}catch(e){return null}})();
+  const at = k => (AUI[k]||{})[kl] || (AUI[k]||{}).it || k;
+  const LN4 = ["it","es","en","de"], LNAME = {it:"Italiano",es:"Español",en:"English",de:"Deutsch"};
+  let main = kl==="es" ? "es" : "it";
+  document.body.innerHTML = `<style>
+   html,body{padding:0;background:#eef1f2}
+   .kh{background:var(--ink);color:#fff;display:flex;align-items:center;gap:12px;padding:14px 20px;padding-top:calc(14px + env(safe-area-inset-top));flex-wrap:wrap}
+   .kh h1{font-family:Fraunces,serif;font-weight:500;font-size:24px;margin:0;color:#fff}
+   .kh .sp{flex:1}
+   .pill{border:0;border-radius:999px;padding:8px 14px;font-weight:600;font-size:13px;background:rgba(255,255,255,.12);color:#fff;text-decoration:none}
+   .wrap{max-width:900px;margin:0 auto;padding:12px 16px 60px}
+   .hint{font-size:13px;color:var(--muted);margin:6px 0 4px}
+   .cat{margin-top:22px} .cat h2{display:flex;align-items:center;gap:10px;font-family:Fraunces,serif;font-weight:500;font-size:22px;margin:0 0 10px}
+   .cat h2 button{margin-left:auto;border:0;background:var(--ocean);color:#fff;border-radius:10px;padding:8px 14px;font-weight:600;font-size:14px}
+   .ar{display:flex;align-items:center;gap:10px;background:#fff;border-radius:14px;padding:10px 12px;margin-bottom:8px;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+   .ar.off{opacity:.55}
+   .ar .ic{font-size:24px;width:34px;text-align:center}
+   .ar .nm{flex:1;min-width:0} .ar .nm b{display:block;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis} .ar .nm small{color:var(--muted)}
+   .ar .pr{font-weight:700;min-width:64px;text-align:right}
+   .mv{display:flex;flex-direction:column;gap:2px} .mv button{border:0;background:#eef1f2;border-radius:6px;width:30px;height:22px;font-size:12px}
+   .sw{position:relative;width:52px;height:30px;border-radius:999px;border:0;background:#cfd6d9;flex:none}
+   .sw::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:.2s}
+   .sw.on{background:var(--leaf)} .sw.on::after{left:25px}
+   .eb{border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 12px;font-weight:600}
+   .ov{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:20px 10px;z-index:50}
+   .fm{background:#fff;border-radius:18px;max-width:640px;width:100%;padding:18px}
+   .fm h3{font-family:Fraunces,serif;font-weight:500;font-size:22px;margin:0 0 12px}
+   .fm label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin:12px 0 4px}
+   .fm input,.fm select,.fm textarea{width:100%;box-sizing:border-box;font:inherit;font-size:16px;padding:10px 12px;border:1px solid #cfd6d9;border-radius:10px}
+   .g3{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px}
+   .lt{display:flex;gap:6px;margin-top:4px} .lt button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 12px;font-weight:600}
+   .lt button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+   details{margin-top:14px;background:#f6f8f8;border-radius:12px;padding:8px 12px} summary{font-size:13px;font-weight:600;color:var(--muted);cursor:pointer}
+   .chips{display:flex;flex-wrap:wrap;gap:6px} .chips label{display:flex;align-items:center;gap:6px;margin:0;font-weight:500;color:var(--ink);background:#f1f3f4;border-radius:999px;padding:6px 10px;font-size:14px}
+   .chips input{width:auto}
+   .fb{display:flex;gap:10px;margin-top:18px} .fb button{flex:1;height:48px;border-radius:12px;border:0;font-weight:700;font-size:16px}
+   .fb .s{background:var(--ocean);color:#fff} .fb .c{background:#eef1f2}
+   .dl{margin-top:14px;width:100%;border:0;background:none;color:var(--coral);font-weight:600;padding:10px}
+   .er{color:var(--coral);font-weight:600;min-height:20px;margin-top:8px}
+   .tst{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 18px;border-radius:12px;font-weight:600;z-index:60;display:none}
+  </style>
+  <div class="kh"><h1>✏️ <span id="at"></span></h1><div class="sp"></div><div class="langs" id="alang"></div><a class="pill" href="#cucina" id="aback"></a></div>
+  <div class="wrap" id="aw"></div><div class="tst" id="atst"></div>`;
+
+  const toastA = m => { const e=$("#atst"); e.textContent=m; e.style.display="block"; clearTimeout(e._t); e._t=setTimeout(()=>e.style.display="none",2600); };
+  async function call(fn, body){
+    const r = await rpc(fn, Object.assign({p_pin:PIN}, body));
+    if(r && r.error==="bad_pin" || r && r.error==="locked"){ PIN=null; try{localStorage.removeItem("k-pin")}catch(_){} pinScreen(at("pinBad")); throw new Error("pin"); }
+    if(r && r.error) throw new Error(r.error);
+    return r;
+  }
+  function header(){
+    $("#at").textContent = at("title"); $("#aback").textContent = at("back");
+    $("#alang").innerHTML = ["it","es","en"].map(l=>`<button class="${l===kl?"on":""}" data-al="${l}">${l.toUpperCase()}</button>`).join("");
+  }
+  function pinScreen(msg){
+    header();
+    $("#aw").innerHTML = `<div style="max-width:320px;margin:40px auto;text-align:center">
+      <h2 style="font-family:Fraunces,serif;font-size:24px;margin:0 0 14px">🔒 ${at("pin")}</h2>
+      <input id="apin" type="password" inputmode="numeric" autocomplete="off" maxlength="12" style="width:100%;box-sizing:border-box;font-size:28px;text-align:center;letter-spacing:.3em;padding:12px;border-radius:14px;border:1px solid #cfd6d9">
+      <div class="er">${msg||""}</div><div class="fb"><button class="s" id="ago">${at("enter")}</button></div></div>`;
+    const go=async()=>{ const v=$("#apin").value.trim(); if(!v) return;
+      try{ const r=await rpc("kitchen_feed",{p_pin:v}); if(r && r.error){ pinScreen(at("pinBad")); return; } }catch(e){ pinScreen(at("err")); return; }
+      PIN=v; try{localStorage.setItem("k-pin",v)}catch(_){} list(); };
+    $("#ago").onclick=go; $("#apin").onkeydown=e=>{ if(e.key==="Enter") go(); }; $("#apin").focus();
+  }
+  function list(){
+    header();
+    $("#aw").innerHTML = `<p class="hint">${at("hint")}</p>` + CATS.map(c=>{
+      const items = M.filter(m=>m.c===c.id);
+      return `<div class="cat"><h2>${c.e} ${esc(c.n[kl]||c.n.it)} <button data-add="${c.id}">${at("add")}</button></h2>` +
+        items.map((m,i)=>`<div class="ar ${m.av?"":"off"}">
+          <div class="mv"><button data-mv="${m.id}" data-d="-1" ${i?"":"disabled"}>▲</button><button data-mv="${m.id}" data-d="1" ${i<items.length-1?"":"disabled"}>▼</button></div>
+          <div class="ic">${esc(m.i)}</div>
+          <div class="nm"><b>${esc(LT(m.n,kl))}</b><small>${m.av?at("avail"):"⛔ "+at("sold")}</small></div>
+          <div class="pr">${eur(m.p)}</div>
+          <button class="sw ${m.av?"on":""}" data-av="${m.id}" aria-label="${at("avail")}"></button>
+          <button class="eb" data-ed="${m.id}">${at("edit")}</button></div>`).join("") + `</div>`;
+    }).join("");
+  }
+  function form(m){
+    const isNew = !m.id && m.id!==0;
+    const v = {id:isNew?null:m.id, c:m.c, i:m.i||"🍽", p:isNew?"":m.p, a:[...(m.a||[])], t:[...(m.t||[])], n:Object.assign({},m.n||{}), d:Object.assign({},m.d||{}), av:m.av!==false};
+    const others = LN4.filter(l=>l!==main);
+    const ov = document.createElement("div"); ov.className="ov";
+    ov.innerHTML = `<div class="fm">
+      <h3>${isNew?at("newItem"):at("editItem")}</h3>
+      <label>${at("mainLang")}</label><div class="lt">${LN4.map(l=>`<button type="button" data-ml="${l}" class="${l===main?"on":""}">${LNAME[l]}</button>`).join("")}</div>
+      <label>${at("name")} (${LNAME[main]}) *</label><input id="fn_${main}" maxlength="80" value="${esc(v.n[main]||"")}">
+      <label>${at("desc")} (${LNAME[main]})</label><textarea id="fd_${main}" rows="2" maxlength="200">${esc(v.d[main]||"")}</textarea>
+      <div class="g3">
+        <div><label>${at("cat")}</label><select id="fc">${CATS.map(c=>`<option value="${c.id}" ${c.id===v.c?"selected":""}>${c.e} ${esc(c.n[kl]||c.n.it)}</option>`).join("")}</select></div>
+        <div><label>${at("price")}</label><input id="fp" inputmode="decimal" value="${v.p===""?"":String(v.p).replace(".",",")}"></div>
+        <div><label>${at("icon")}</label><input id="fi" maxlength="4" value="${esc(v.i)}"></div>
+      </div>
+      <label>${at("alg")}</label><div class="chips">${Object.entries(AL).map(([k,a])=>`<label><input type="checkbox" data-fa="${k}" ${v.a.includes(k)?"checked":""}> ${a.e} ${a[kl]||a.it}</label>`).join("")}</div>
+      <label>${at("tags")}</label><div class="chips">
+        <label><input type="checkbox" data-ft="pop" ${v.t.includes("pop")?"checked":""}> ★ ${UI.pop[kl]||UI.pop.it}</label>
+        <label><input type="checkbox" data-ft="veg" ${v.t.includes("veg")?"checked":""}> 🌱 ${UI.veg[kl]||UI.veg.it}</label>
+        ${UI.vegan?`<label><input type="checkbox" data-ft="vegan" ${v.t.includes("vegan")?"checked":""}> 🌱 ${UI.vegan[kl]||UI.vegan.it}</label>`:""}</div>
+      <details ${others.some(l=>v.n[l]||v.d[l])?"":""}><summary>${at("other")}</summary>
+        ${others.map(l=>`<label>${at("name")} (${LNAME[l]})</label><input id="fn_${l}" maxlength="80" value="${esc(v.n[l]||"")}">
+          <label>${at("desc")} (${LNAME[l]})</label><textarea id="fd_${l}" rows="2" maxlength="200">${esc(v.d[l]||"")}</textarea>`).join("")}
+      </details>
+      <div class="er" id="fer"></div>
+      <div class="fb"><button class="c" id="fx">${at("cancel")}</button><button class="s" id="fs">${at("save")}</button></div>
+      ${isNew?"":`<button class="dl" id="fdel">🗑 ${at("del")}</button>`}
+    </div>`;
+    document.body.appendChild(ov);
+    const read = ()=>{ LN4.forEach(l=>{ const a=ov.querySelector("#fn_"+l), b=ov.querySelector("#fd_"+l); if(a) v.n[l]=a.value.trim(); if(b) v.d[l]=b.value.trim(); });
+      v.c=ov.querySelector("#fc").value; v.i=ov.querySelector("#fi").value.trim()||"🍽";
+      v.p=ov.querySelector("#fp").value.trim().replace(",",".");
+      v.a=[...ov.querySelectorAll("[data-fa]:checked")].map(x=>x.dataset.fa); v.t=[...ov.querySelectorAll("[data-ft]:checked")].map(x=>x.dataset.ft); };
+    ov.querySelectorAll("[data-ml]").forEach(b=>b.onclick=()=>{ read(); main=b.dataset.ml; ov.remove(); form(Object.assign({},v,{id:v.id===null?undefined:v.id,p:v.p===""?"":+v.p})); });
+    ov.querySelector("#fx").onclick=()=>ov.remove();
+    ov.querySelector("#fs").onclick=async()=>{
+      read(); const er=ov.querySelector("#fer");
+      if(!LN4.some(l=>v.n[l])){ er.textContent=at("needName"); return; }
+      const pr=parseFloat(v.p); if(!(pr>=0 && pr<1000)){ er.textContent=at("needPrice"); return; }
+      const item={id:v.id,c:v.c,i:v.i,p:Math.round(pr*100)/100,a:v.a,t:v.t,n:clean(v.n),d:clean(v.d),av:v.av};
+      ov.querySelector("#fs").disabled=true;
+      try{ await call("admin_save_item",{p_item:item}); await loadMenu(); ov.remove(); list(); toastA(at("saved")); }
+      catch(e){ if(e.message!=="pin"){ er.textContent=at("err"); ov.querySelector("#fs").disabled=false; } else ov.remove(); }
+    };
+    const dl=ov.querySelector("#fdel");
+    if(dl) dl.onclick=async()=>{
+      if(dl.dataset.sure!=="1"){ dl.dataset.sure="1"; dl.textContent="⚠️ "+at("delQ")+" → "+at("yesDel"); return; }
+      try{ await call("admin_delete_item",{p_id:v.id}); await loadMenu(); ov.remove(); list(); toastA(at("saved")); }catch(e){ ov.querySelector("#fer").textContent=at("err"); }
+    };
+  }
+  const clean = o => { const r={}; Object.entries(o).forEach(([k,x])=>{ if(x) r[k]=x; }); return r; };
+
+  document.addEventListener("click", async e=>{
+    const l=e.target.closest("[data-al]"); if(l){ kl=l.dataset.al; main = kl==="es"?"es":"it"; try{localStorage.setItem("k-lang",kl)}catch(_){} PIN?list():pinScreen(); return; }
+    const av=e.target.closest("[data-av]"); if(av){ const m=byId(av.dataset.av); if(!m) return; m.av=!m.av; list();
+      try{ await call("admin_set_available",{p_id:m.id,p_av:m.av}); toastA(at("saved")); }catch(err){ m.av=!m.av; list(); if(err.message!=="pin") toastA(at("err")); } return; }
+    const ed=e.target.closest("[data-ed]"); if(ed){ const m=byId(ed.dataset.ed); if(m) form(m); return; }
+    const ad=e.target.closest("[data-add]"); if(ad){ form({c:ad.dataset.add,i:"🍽",a:[],t:[],n:{},d:{},av:true}); return; }
+    const mv=e.target.closest("[data-mv]"); if(mv){ try{ await call("admin_move_item",{p_id:+mv.dataset.mv,p_dir:+mv.dataset.d}); await loadMenu(); list(); }catch(err){} return; }
+  });
+
+  header();
+  if(!PIN){ pinScreen(); return; }
+  $("#aw").innerHTML = `<p class="hint">…</p>`;
+  loadMenu().then(()=>list());
+}
+
+const MODE = location.hash==="#gestione" ? "admin" : location.hash==="#cucina" ? "kitchen" : "menu";
+window.addEventListener("hashchange",()=>{ const m = location.hash==="#gestione" ? "admin" : location.hash==="#cucina" ? "kitchen" : "menu"; if(m!==MODE) location.reload(); });
+if(MODE==="admin"){
+  admin();
+} else if(MODE==="kitchen"){
+  loadMenu();
   kitchen();
 } else {
 loc = parseHash();
 window.addEventListener("hashchange",()=>{const p=parseHash(); if(p){loc=p; renderWhere();}});
 render(); observe();
+loadMenu().then(ok=>{ if(ok) render(); });
+document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") loadMenu().then(ok=>{ if(ok){ render(); renderBar(); } }); });
 }
 const _rm = renderMain; renderMain = function(){_rm(); observe();};
 </script>

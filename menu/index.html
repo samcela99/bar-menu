@@ -559,6 +559,9 @@ const KUI = {
   sold:{it:"Venduto",es:"Vendido",en:"Sold"},
   print:{it:"🖨 Stampa",es:"🖨 Imprimir",en:"🖨 Print"},
   closeBtn:{it:"Chiudi",es:"Cerrar",en:"Close"},
+  reset:{it:"🗑 Azzera storico",es:"🗑 Borrar historial",en:"🗑 Clear history"},
+  resetQ:{it:"Cancellare tutte le chiusure e gli ordini consegnati? Non si può annullare.",es:"¿Borrar todos los cierres y pedidos entregados? No se puede deshacer.",en:"Delete all closures and delivered orders? This cannot be undone."},
+  resetYes:{it:"Sì, azzera tutto",es:"Sí, borrar todo",en:"Yes, clear all"},
   noHist:{it:"Nessuna chiusura",es:"Sin cierres",en:"No closures yet"},
   qrOnly:{it:"Solo ordini arrivati dal QR",es:"Solo pedidos recibidos por QR",en:"QR orders only"},
   empty:{it:"Nessun ordine",es:"Sin pedidos",en:"No orders"},
@@ -714,7 +717,14 @@ function kitchen(){
     let r; try{ r=await rpc("kitchen_closures",{p_pin:PIN}); }catch(e){ return; }
     const list=(r&&r.list)||[];
     const d=overlay(`<h3>${kt("hist")}</h3>${list.length?list.map((c,i)=>`<div class="ln" style="cursor:pointer" data-hi="${i}"><span>${fmtT(c.from_ts)} → ${fmtT(c.to_ts)}</span><b>${c.n} · ${eur(+c.total)}</b></div>`).join(""):`<p class="sub">${kt("noHist")}</p>`}
-      <div class="bb"><button class="pri" data-kx>${kt("closeBtn")}</button></div>`);
+      <div class="bb"><button id="kreset">${kt("reset")}</button><button class="pri" data-kx>${kt("closeBtn")}</button></div>`);
+    const rb=d.querySelector("#kreset");
+    rb.onclick=async()=>{
+      if(rb.dataset.sure!=="1"){ rb.dataset.sure="1"; rb.textContent="⚠️ "+kt("resetYes"); rb.style.background="var(--coral)"; rb.style.color="#fff";
+        const p=document.createElement("p"); p.className="sub"; p.textContent=kt("resetQ"); rb.parentNode.before(p); return; }
+      rb.disabled=true;
+      try{ const r=await rpc("kitchen_reset_history",{p_pin:PIN}); if(r && r.error) throw 0; d.remove(); load(); history(); }catch(e){ rb.disabled=false; }
+    };
     d.querySelectorAll("[data-hi]").forEach(el=>el.onclick=()=>{ d.remove(); overlay(summaryHTML(list[+el.dataset.hi])); });
   }
   function pinScreen(msg){

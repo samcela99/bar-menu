@@ -944,6 +944,25 @@ function admin(){
 
 const MODE = location.hash==="#gestione" ? "admin" : location.hash==="#cucina" ? "kitchen" : "menu";
 window.addEventListener("hashchange",()=>{ const m = location.hash==="#gestione" ? "admin" : location.hash==="#cucina" ? "kitchen" : "menu"; if(m!==MODE) location.reload(); });
+if(MODE!=="menu"){
+  // app installabile "Carmensita Bar" (solo per il personale: tablet ordini e gestione menù)
+  const addH=(tag,attrs)=>{ const el=document.createElement(tag); Object.entries(attrs).forEach(([k,v])=>el.setAttribute(k,v)); document.head.appendChild(el); };
+  addH("link",{rel:"manifest",href:"/app/manifest.webmanifest"});
+  addH("link",{rel:"apple-touch-icon",href:"/app/apple-touch-icon.png"});
+  addH("meta",{name:"apple-mobile-web-app-capable",content:"yes"});
+  addH("meta",{name:"mobile-web-app-capable",content:"yes"});
+  addH("meta",{name:"apple-mobile-web-app-title",content:"Carmensita Bar"});
+  addH("meta",{name:"apple-mobile-web-app-status-bar-style",content:"black-translucent"});
+  addH("meta",{name:"theme-color",content:"#1f2a2e"});
+  document.title = "Carmensita Bar";
+  if("serviceWorker" in navigator) navigator.serviceWorker.register("/menu/sw.js",{scope:"/menu/"}).catch(()=>{});
+  window.addEventListener("beforeinstallprompt", ev=>{ ev.preventDefault(); window._instEv=ev;
+    const add=()=>{ const h=document.querySelector(".kh"); if(!h){ return setTimeout(add,500); } if(document.getElementById("kinst")) return;
+      const b=document.createElement("button"); b.id="kinst"; b.className="pill"; b.style.background="#F2B880"; b.style.color="#1f2a2e"; b.textContent="📲 Installa app";
+      b.onclick=async()=>{ try{ window._instEv.prompt(); await window._instEv.userChoice; }catch(e){} b.remove(); };
+      h.insertBefore(b, h.querySelector(".langs")); };
+    add(); });
+}
 if(MODE==="admin"){
   admin();
 } else if(MODE==="kitchen"){
